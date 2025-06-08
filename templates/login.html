@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Login - ChainScope{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <h2 class="login-title">
+        <span class="login-icon">🔒</span>
+        Login to ChainScope
+    </h2>
+
+    <form method="POST" class="login-form">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" 
+                   id="username" 
+                   name="username" 
+                   required 
+                   class="form-input"
+                   autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" 
+                   id="password" 
+                   name="password" 
+                   required 
+                   class="form-input"
+                   autocomplete="current-password">
+        </div>
+        
+        <button type="submit" class="btn btn-primary">
+            <span class="btn-icon">🚀</span>
+            Login
+        </button>
+    </form>
+
+    <div class="register-link">
+        <p>Don't have an account? 
+            <a href="{{ url_for('register') }}" class="link-accent">
+                Register here
+            </a>
+        </p>
+    </div>
+</div>
+
+<style>
+    .login-container {
+        max-width: 400px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border-color);
+    }
+
+    .login-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+        font-size: 1.5rem;
+        color: var(--text-primary);
+    }
+
+    .login-icon {
+        font-size: 1.75rem;
+    }
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .form-group label {
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.2s ease;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: var(--accent-crypto);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+        background: var(--accent-crypto);
+        color: var(--text-on-accent);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+    }
+
+    .register-link {
+        margin-top: 2rem;
+        text-align: center;
+        color: var(--text-secondary);
+    }
+
+    .link-accent {
+        color: var(--accent-crypto);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+    .link-accent:hover {
+        color: var(--accent-crypto-hover);
+        text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+        .login-container {
+            margin: 1rem;
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

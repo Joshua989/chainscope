@@ -1,0 +1,725 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Post - ChainScope{% endblock %}
+
+{% block content %}
+<div class="edit-post-container">
+    <!-- Page Header -->
+    <div class="edit-header">
+        <div class="edit-breadcrumb">
+            <a href="{{ url_for('index') }}" class="breadcrumb-link">
+                <span class="breadcrumb-icon">🏠</span>
+                Home
+            </a>
+            <span class="breadcrumb-separator">›</span>
+            <a href="{{ url_for('view_post', post_id=post.id) }}" class="breadcrumb-link">
+                <span class="breadcrumb-icon">📄</span>
+                {{ post.title[:30] + '...' if post.title|length > 30 else post.title }}
+            </a>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-current">Edit</span>
+        </div>
+        
+        <div class="edit-title-section">
+            <h1 class="edit-title">
+                <span class="title-icon">✏️</span>
+                Edit Post
+            </h1>
+            <p class="edit-subtitle">Update your cryptocurrency insights and blockchain knowledge</p>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="edit-form-wrapper">
+        <form method="POST" enctype="multipart/form-data" class="edit-form">
+            <!-- Title Field -->
+            <div class="form-group">
+                <label for="title" class="form-label">
+                    <span class="label-icon">📝</span>
+                    Post Title
+                </label>
+                <input type="text" 
+                       id="title" 
+                       name="title" 
+                       value="{{ post.title }}" 
+                       class="form-input" 
+                       required
+                       placeholder="Enter your post title...">
+            </div>
+
+            <!-- Content Field -->
+            <div class="form-group">
+                <label for="content" class="form-label">
+                    <span class="label-icon">📖</span>
+                    Post Content
+                </label>
+                <div class="editor-container">
+                    <div id="editor" class="custom-editor"></div>
+                    <input type="hidden" name="content" id="hiddenContent">
+                </div>
+                <div class="textarea-help">
+                    Use the toolbar to format your content with headers, lists, and emphasis
+                </div>
+            </div>
+
+            <!-- Current Image Display -->
+            {% if post.image_filename %}
+            <div class="form-group">
+                <label class="form-label">
+                    <span class="label-icon">🖼️</span>
+                    Current Image
+                </label>
+                <div class="current-image-container">
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
+                         alt="Current post image" 
+                         class="current-image">
+                    <div class="image-overlay">
+                        <span class="overlay-text">Current Image</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- New Image Upload -->
+            <div class="form-group">
+                <label for="image" class="form-label">
+                    <span class="label-icon">📷</span>
+                    {% if post.image_filename %}
+                        Replace Image (Optional)
+                    {% else %}
+                        Add Image (Optional)
+                    {% endif %}
+                </label>
+                <div class="file-upload-wrapper">
+                    <input type="file" 
+                           id="image" 
+                           name="image" 
+                           accept="image/*" 
+                           class="file-input">
+                    <label for="image" class="file-upload-label">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Choose Image File</span>
+                        <span class="upload-subtext">PNG, JPG, GIF up to 10MB</span>
+                    </label>
+                </div>
+                <div class="file-help">
+                    {% if post.image_filename %}
+                        Upload a new image to replace the current one, or leave empty to keep the current image.
+                    {% else %}
+                        Add an image to make your post more engaging and visually appealing.
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-crypto btn-large">
+                    <span class="btn-icon">💾</span>
+                    Update Post
+                </button>
+                <a href="{{ url_for('view_post', post_id=post.id) }}" class="btn btn-secondary btn-large">
+                    <span class="btn-icon">❌</span>
+                    Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Help Section -->
+    <div class="edit-help">
+        <div class="help-card">
+            <h3 class="help-title">
+                <span class="help-icon">💡</span>
+                Writing Tips
+            </h3>
+            <ul class="help-list">
+                <li>Use clear, descriptive titles that capture your main topic</li>
+                <li>Break up long content with paragraphs for better readability</li>
+                <li>Include relevant images to enhance your post's visual appeal</li>
+                <li>Share personal insights and analysis, not just news</li>
+                <li>Engage with the crypto community through thoughtful content</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+
+<style>
+    .edit-post-container {
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .edit-header {
+        margin-bottom: 2rem;
+    }
+
+    .edit-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 0;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+
+    .breadcrumb-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: var(--text-muted);
+        transition: color 0.3s ease;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--accent-crypto);
+    }
+
+    .breadcrumb-icon {
+        font-size: 1rem;
+    }
+
+    .breadcrumb-separator {
+        font-size: 1.2rem;
+        opacity: 0.6;
+    }
+
+    .breadcrumb-current {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .edit-title-section {
+        background: var(--bg-secondary);
+        border-radius: 20px;
+        padding: 2rem;
+        border: 1px solid var(--border-color);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .edit-title-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 30% 30%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 70% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .edit-title {
+        position: relative;
+        z-index: 2;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        background: var(--gradient-crypto);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+    }
+
+    .title-icon {
+        font-size: 2rem;
+    }
+
+    .edit-subtitle {
+        position: relative;
+        z-index: 2;
+        font-size: 1.1rem;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .edit-form-wrapper {
+        background: var(--bg-secondary);
+        border-radius: 20px;
+        padding: 2.5rem;
+        border: 1px solid var(--border-color);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--shadow-glow);
+    }
+
+    .edit-form-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+    }
+
+    .edit-form {
+        position: relative;
+        z-index: 2;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.75rem;
+        font-size: 1.1rem;
+    }
+
+    .label-icon {
+        font-size: 1.2rem;
+    }
+
+    .form-input,
+    .form-textarea {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        resize: vertical;
+    }
+
+    .form-input:focus,
+    .form-textarea:focus {
+        outline: none;
+        border-color: var(--accent-crypto);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+        background: var(--bg-primary);
+    }
+
+    .form-input::placeholder,
+    .form-textarea::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-textarea {
+        min-height: 200px;
+        line-height: 1.6;
+    }
+
+    .textarea-help {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+
+    .current-image-container {
+        position: relative;
+        display: inline-block;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        max-width: 300px;
+    }
+
+    .current-image {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.3s ease;
+    }
+
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .current-image-container:hover .image-overlay {
+        opacity: 1;
+    }
+
+    .current-image-container:hover .current-image {
+        transform: scale(1.05);
+    }
+
+    .overlay-text {
+        color: white;
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+
+    .file-upload-wrapper {
+        position: relative;
+    }
+
+    .file-input {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    .file-upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 2rem;
+        border: 2px dashed var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-tertiary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .file-upload-label:hover {
+        border-color: var(--accent-crypto);
+        background: var(--bg-primary);
+        transform: translateY(-2px);
+    }
+
+    .upload-icon {
+        font-size: 2rem;
+        opacity: 0.7;
+    }
+
+    .upload-text {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .upload-subtext {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    .file-help {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        line-height: 1.5;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+        margin-top: 2rem;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        min-width: 140px;
+        justify-content: center;
+    }
+
+    .btn-crypto {
+        background: var(--gradient-crypto);
+        color: white;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+
+    .btn-crypto:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+    }
+
+    .btn-secondary {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+        background: var(--hover-bg);
+        transform: translateY(-2px);
+    }
+
+    .btn-large {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        min-width: 160px;
+    }
+
+    .btn-icon {
+        font-size: 1rem;
+    }
+
+    .edit-help {
+        margin-bottom: 2rem;
+    }
+
+    .help-card {
+        background: var(--bg-secondary);
+        border-radius: 16px;
+        padding: 2rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .help-title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 1rem;
+    }
+
+    .help-icon {
+        font-size: 1.4rem;
+    }
+
+    .help-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .help-list li {
+        padding: 0.5rem 0;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        position: relative;
+        padding-left: 1.5rem;
+    }
+
+    .help-list li::before {
+        content: '🔹';
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+    }
+
+    .editor-container {
+        border: 2px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--bg-tertiary);
+    }
+
+    .editor-container .ql-toolbar {
+        border: none !important;
+        border-bottom: 1px solid var(--border-color) !important;
+        background: var(--bg-primary);
+        padding: 12px;
+    }
+
+    .editor-container .ql-container {
+        border: none !important;
+        background: var(--bg-tertiary);
+        font-family: inherit;
+        font-size: 1rem;
+        min-height: 200px;
+    }
+
+    .editor-container .ql-editor {
+        min-height: 200px;
+        max-height: 500px;
+        overflow-y: auto;
+        line-height: 1.6;
+    }
+
+    .editor-container:focus-within {
+        border-color: var(--accent-crypto);
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+    }
+
+    /* Customize Quill editor colors to match your theme */
+    .ql-snow.ql-toolbar button:hover,
+    .ql-snow .ql-toolbar button:hover,
+    .ql-snow.ql-toolbar button:focus,
+    .ql-snow .ql-toolbar button:focus,
+    .ql-snow.ql-toolbar button.ql-active,
+    .ql-snow .ql-toolbar button.ql-active,
+    .ql-snow.ql-toolbar .ql-picker-label:hover,
+    .ql-snow .ql-toolbar .ql-picker-label:hover,
+    .ql-snow.ql-toolbar .ql-picker-label.ql-active,
+    .ql-snow .ql-toolbar .ql-picker-label.ql-active,
+    .ql-snow.ql-toolbar .ql-picker-item:hover,
+    .ql-snow .ql-toolbar .ql-picker-item:hover,
+    .ql-snow.ql-toolbar .ql-picker-item.ql-selected,
+    .ql-snow .ql-toolbar .ql-picker-item.ql-selected {
+        color: var(--accent-crypto);
+    }
+
+    .ql-snow.ql-toolbar button:hover .ql-stroke,
+    .ql-snow .ql-toolbar button:hover .ql-stroke,
+    .ql-snow.ql-toolbar button:focus .ql-stroke,
+    .ql-snow .ql-toolbar button:focus .ql-stroke,
+    .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+    .ql-snow .ql-toolbar button.ql-active .ql-stroke {
+        stroke: var(--accent-crypto);
+    }
+
+    .ql-snow.ql-toolbar button:hover .ql-fill,
+    .ql-snow .ql-toolbar button:hover .ql-fill,
+    .ql-snow.ql-toolbar button:focus .ql-fill,
+    .ql-snow .ql-toolbar button:focus .ql-fill,
+    .ql-snow.ql-toolbar button.ql-active .ql-fill,
+    .ql-snow .ql-toolbar button.ql-active .ql-fill {
+        fill: var(--accent-crypto);
+    }
+
+    @media (max-width: 768px) {
+        .edit-post-container {
+            padding: 0 0.5rem;
+        }
+
+        .edit-form-wrapper {
+            padding: 1.5rem;
+        }
+
+        .edit-title {
+            font-size: 2rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn {
+            width: 100%;
+        }
+
+        .edit-breadcrumb {
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb-link span {
+            display: none;
+        }
+
+        .breadcrumb-link::after {
+            content: attr(title);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .edit-title-section {
+            padding: 1.5rem;
+        }
+
+        .edit-title {
+            font-size: 1.75rem;
+        }
+
+        .form-input,
+        .form-textarea {
+            padding: 0.875rem 1rem;
+        }
+
+        .file-upload-label {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File upload preview
+        const fileInput = document.getElementById('image');
+        const uploadLabel = document.querySelector('.file-upload-label');
+        const uploadText = document.querySelector('.upload-text');
+        const uploadSubtext = document.querySelector('.upload-subtext');
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadText.textContent = file.name;
+                uploadSubtext.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+                uploadLabel.style.borderColor = 'var(--accent-crypto)';
+                uploadLabel.style.background = 'var(--bg-primary)';
+            } else {
+                uploadText.textContent = 'Choose Image File';
+                uploadSubtext.textContent = 'PNG, JPG, GIF up to 10MB';
+                uploadLabel.style.borderColor = 'var(--border-color)';
+                uploadLabel.style.background = 'var(--bg-tertiary)';
+            }
+        });
+
+        // Initialize Quill editor
+        var quill = new Quill('#editor', {
+            theme: 'snow',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    ['blockquote', 'code-block'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'script': 'sub'}, { 'script': 'super' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    ['link', 'image'],
+                    ['clean']
+                ]
+            },
+            placeholder: 'Share your insights about cryptocurrency, blockchain, and digital assets...'
+        });
+
+        // Set existing content
+        quill.root.innerHTML = `{{ post.content|safe }}`;
+
+        // Update hidden input before form submission
+        const form = document.querySelector('.edit-form');
+        form.addEventListener('submit', function(e) {
+            const title = document.getElementById('title').value.trim();
+            const content = quill.root.innerHTML;
+            document.getElementById('hiddenContent').value = content;
+
+            if (!title || !content) {
+                e.preventDefault();
+                alert('Please fill in both title and content fields.');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<span class="btn-icon">⏳</span>Updating...';
+            submitBtn.disabled = true;
+        });
+    });
+</script>
+{% endblock %}

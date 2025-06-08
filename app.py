@@ -30,6 +30,7 @@ def init_db():
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
+            profile_image TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -92,6 +93,15 @@ def register():
             flash('All fields are required')
             return render_template('register.html')
         
+        # Handle profile image upload
+        profile_image = None
+        if 'profile_image' in request.files:
+            file = request.files['profile_image']
+            if file and file.filename != '' and allowed_file(file.filename):
+                filename = str(uuid.uuid4()) + '.' + file.filename.rsplit('.', 1)[1].lower()
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                profile_image = filename
+        
         conn = get_db_connection()
         
         # Check if user already exists
@@ -105,11 +115,11 @@ def register():
             conn.close()
             return render_template('register.html')
         
-        # Create new user
+        # Create new user with profile image
         password_hash = generate_password_hash(password)
         conn.execute(
-            'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-            (username, email, password_hash)
+            'INSERT INTO users (username, email, password_hash, profile_image) VALUES (?, ?, ?, ?)',
+            (username, email, password_hash, profile_image)
         )
         conn.commit()
         conn.close()
@@ -188,15 +198,15 @@ def create_post():
 def view_post(post_id):
     conn = get_db_connection()
     post = conn.execute('''
-        SELECT p.*, u.username 
+        SELECT p.*, u.username, u.profile_image
         FROM posts p 
         JOIN users u ON p.author_id = u.id 
         WHERE p.id = ?
     ''', (post_id,)).fetchone()
     
-    # Fetch chat messages for this post
+    # Fetch chat messages for this post with user profile images
     messages = conn.execute('''
-        SELECT m.*, u.username
+        SELECT m.*, u.username, u.profile_image
         FROM chat_messages m
         JOIN users u ON m.user_id = u.id
         WHERE m.post_id = ?
@@ -268,6 +278,31 @@ def edit_post(post_id):
     conn.close()
     return render_template('edit_post.html', post=post)
 
+
+@app.route('/admin')
+def admin():
+    if 'user_id' not in session:
+        flash('Please login to access admin panel')
+        return redirect(url_for('login'))
+        
+    conn = get_db_connection()
+    user = conn.execute('SELECT * FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    
+    # Get all posts with author information
+    posts = conn.execute('''
+        SELECT p.*, u.username 
+        FROM posts p 
+        JOIN users u ON p.author_id = u.id 
+        ORDER BY p.created_at DESC
+    ''').fetchall()
+    
+    # Get all users
+    users = conn.execute('SELECT * FROM users').fetchall()
+    
+    conn.close()
+    
+    return render_template('admin.html', posts=posts, users=users)
+
 @app.route('/delete_post/<int:post_id>')
 def delete_post(post_id):
     if 'user_id' not in session:
@@ -302,26 +337,37 @@ def delete_post(post_id):
 
 @app.route('/post/<int:post_id>/send_message', methods=['POST'])
 def send_message(post_id):
-    if 'user_id' not in session:
-        return jsonify({'error': 'Please login to chat'}), 401
-    
     message = request.form.get('message')
+    username = request.form.get('username', 'Anonymous')  # Default to 'Anonymous' if no name provided
+    
     if not message or not message.strip():
         return jsonify({'error': 'Message cannot be empty'}), 400
     
     conn = get_db_connection()
+    # Create anonymous user if needed
+    anon_user = conn.execute('SELECT id FROM users WHERE username = "Anonymous"').fetchone()
+    if not anon_user:
+        conn.execute('''
+            INSERT INTO users (username, email, password_hash) 
+            VALUES ("Anonymous", "anonymous@example.com", "none")
+        ''')
+        conn.commit()
+        anon_user = conn.execute('SELECT id FROM users WHERE username = "Anonymous"').fetchone()
+    
+    user_id = session.get('user_id', anon_user['id'])  # Use logged in user ID or anonymous ID
+    
     conn.execute('''
         INSERT INTO chat_messages (post_id, user_id, message)
         VALUES (?, ?, ?)
-    ''', (post_id, session['user_id'], message.strip()))
+    ''', (post_id, user_id, message.strip()))
     
-    # Fetch the just-inserted message with username
+    # Fetch the just-inserted message
     new_message = conn.execute('''
-        SELECT m.*, u.username
+        SELECT m.*, COALESCE(?, u.username) as username
         FROM chat_messages m
         JOIN users u ON m.user_id = u.id
         WHERE m.id = last_insert_rowid()
-    ''').fetchone()
+    ''', (username if not session.get('user_id') else None,)).fetchone()
     
     conn.commit()
     conn.close()

@@ -6,6 +6,17 @@
 <div class="post-container">
     <!-- Post Header -->
     <div class="post-header">
+        <div class="user-info">
+            {% if post.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/' + post.profile_image) }}" 
+                     alt="{{ post.username }}" 
+                     class="profile-image">
+            {% else %}
+                <div class="profile-placeholder">{{ post.username[0] | upper }}</div>
+            {% endif %}
+            <span class="username">{{ post.username }}</span>
+        </div>
+
         <div class="post-breadcrumb">
             <a href="{{ url_for('index') }}" class="breadcrumb-link">
                 <span class="breadcrumb-icon">🏠</span>
@@ -73,38 +84,40 @@
         </div>
     </article>
 
-    <!-- Navigation Footer -->
-    <div class="post-footer">
-        <div class="post-navigation">
-            <a href="{{ url_for('index') }}" class="btn btn-primary btn-large">
-                <span class="btn-icon">⬅️</span>
-                Back to Home
-            </a>
-        </div>
-        
-        <div class="post-footer-meta">
-            <p class="footer-text">
-                <span class="footer-icon">💎</span>
-                Part of the ChainScope community
-            </p>
-        </div>
-    </div>
-
     <!-- Chat Section -->
     <div class="chat-section">
-        <h3 class="chat-title">
-            <span class="chat-icon">💭</span>
-            Discussion
-        </h3>
+        <form id="chat-form" class="chat-form" style="margin-bottom: 10px;">
+            {% if not session.user_id %}
+            <input type="text" 
+                   name="username" 
+                   id="chat-username" 
+                   placeholder="Your name (optional)" 
+                   class="chat-input">
+            {% endif %}
+            <input type="text" 
+                   name="message" 
+                   id="chat-message" 
+                   placeholder="Write a comment..." 
+                   class="chat-input" 
+                   required>
+            <button type="submit" class="btn btn-crypto">Send</button>
+        </form>
         
         <div class="chat-messages" id="chatMessages">
             {% for message in messages %}
             <div class="chat-message">
                 <div class="message-header">
-                    <span class="message-user">{{ message.username }}</span>
-                    <span class="message-time">{{ message.created_at }}</span>
+                    {% if message.profile_image %}
+                        <img src="{{ url_for('static', filename='uploads/' + message.profile_image) }}" 
+                             alt="{{ message.username }}" 
+                             class="message-profile-image">
+                    {% else %}
+                        <div class="profile-placeholder small">{{ message.username[0] | upper }}</div>
+                    {% endif %}
+                    <strong>{{ message.username }}</strong>
                 </div>
                 <div class="message-content">{{ message.message }}</div>
+                <small class="message-time">{{ message.created_at }}</small>
             </div>
             {% endfor %}
         </div>
@@ -122,12 +135,24 @@
             </button>
         </form>
         {% else %}
-        <div class="chat-login-prompt">
-            <a href="{{ url_for('login') }}" class="btn btn-crypto">
-                Login to join the discussion
+       
+        {% endif %}
+    </div>
+
+     <!-- Navigation Footer -->
+    <div class="post-footer">
+        <div class="post-navigation">
+            <a href="{{ url_for('index') }}" class="btn btn-primary btn-large">
+                <span class="btn-icon">⬅️</span>
+                Back to Home
             </a>
         </div>
-        {% endif %}
+        
+        <div class="post-footer-meta">
+            <p class="footer-text">
+                webbo 3.0 
+            </p>
+        </div>
     </div>
 </div>
 
@@ -140,6 +165,44 @@
 
     .post-header {
         margin-bottom: 2rem;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .profile-image {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .profile-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+
+    .profile-placeholder.small {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+
+    .message-profile-image {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        object-fit: cover;
     }
 
     .post-breadcrumb {
@@ -509,9 +572,8 @@
 
     .message-header {
         display: flex;
-        justify-content: space-between;
-        margin-bottom: 0.5rem;
-        font-size: 0.9rem;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .message-user {
@@ -742,6 +804,46 @@
                 }
             });
         }
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const messageInput = document.getElementById('chat-message');
+            const usernameInput = document.getElementById('chat-username');
+            
+            const formData = new FormData();
+            formData.append('message', messageInput.value);
+            if (usernameInput) {
+                formData.append('username', usernameInput.value || 'Anonymous');
+            }
+            
+            try {
+                const response = await fetch('/post/{{ post.id }}/send_message', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    // Add new message to chat
+                    const chatMessages = document.querySelector('.chat-messages');
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'chat-message';
+                    messageElement.innerHTML = `
+                        <strong>${data.username}:</strong>
+                        <span>${data.message}</span>
+                        <small>${new Date(data.created_at).toLocaleString()}</small>
+                    `;
+                    chatMessages.insertBefore(messageElement, chatMessages.firstChild);
+                    messageInput.value = '';
+                    if (usernameInput) usernameInput.value = '';
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to send message');
+            }
+        });
     });
 </script>
 {% endblock %}

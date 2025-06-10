@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 app = Flask(__name__)
@@ -62,6 +62,20 @@ def init_db():
         )
     ''')
     
+    # Add Comments table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS comments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            post_id INTEGER NOT NULL,
+            user_id INTEGER,
+            username TEXT NOT NULL,
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (post_id) REFERENCES posts (id),
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -73,14 +87,25 @@ def get_db_connection():
 @app.route('/')
 def index():
     conn = get_db_connection()
+    
+    # Get posts with author info and updated_at time
     posts = conn.execute('''
-        SELECT p.*, u.username 
+        SELECT p.*, u.username, 
+               COALESCE(p.updated_at, p.created_at) as updated_at
         FROM posts p 
         JOIN users u ON p.author_id = u.id 
         ORDER BY p.created_at DESC
     ''').fetchall()
+    
+    # Get total user count for stats
+    user_count = conn.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
+    
     conn.close()
-    return render_template('index.html', posts=posts)
+    return render_template('index.html', 
+                         posts=posts, 
+                         user_count=user_count,
+                         meta_title="ChainScope - Cryptocurrency & Blockchain Insights",
+                         meta_description="Your source for cryptocurrency insights and blockchain knowledge. Discover the latest posts about crypto, blockchain technology, and Web3.")
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -204,14 +229,13 @@ def view_post(post_id):
         WHERE p.id = ?
     ''', (post_id,)).fetchone()
     
-    # Fetch chat messages for this post with user profile images
+    # Fetch all comments for this post
     messages = conn.execute('''
-        SELECT m.*, u.username, u.profile_image
-        FROM chat_messages m
-        JOIN users u ON m.user_id = u.id
-        WHERE m.post_id = ?
-        ORDER BY m.created_at DESC
-        LIMIT 50
+        SELECT c.*, u.profile_image
+        FROM comments c
+        LEFT JOIN users u ON c.user_id = u.id
+        WHERE c.post_id = ?
+        ORDER BY c.created_at ASC
     ''', (post_id,)).fetchall()
     
     conn.close()
@@ -379,6 +403,93 @@ def send_message(post_id):
         'created_at': new_message['created_at']
     })
 
+@app.route('/post/<int:post_id>/comment', methods=['POST'])
+def add_comment(post_id):
+    if not request.json or 'message' not in request.json:
+        return jsonify({'error': 'No message provided'}), 400
+        
+    data = request.json
+    message = data.get('message').strip()
+    
+    if not message:
+        return jsonify({'error': 'Message cannot be empty'}), 400
+    
+    try:
+        if session.get('user_id'):
+            # Logged in user
+            user_id = session['user_id']
+            username = session['username']
+            # Get user's profile image if exists
+            conn = get_db_connection()
+            user = conn.execute('SELECT profile_image FROM users WHERE id = ?', 
+                              (user_id,)).fetchone()
+            profile_image = user['profile_image'] if user else None
+        else:
+            # Anonymous user
+            user_id = None
+            username = data.get('username') or 'Anonymous'
+            profile_image = None
+
+        # Insert comment
+        conn = get_db_connection()
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        conn.execute('''
+            INSERT INTO comments (post_id, user_id, username, message, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (post_id, user_id, username, message, now))
+        conn.commit()
+        conn.close()
+
+        # Return comment data for immediate display
+        return jsonify({
+            'username': username,
+            'message': message,
+            'created_at': now,
+            'profile_image': profile_image
+        })
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()
+
+@app.before_request
+def before_request():
+    if not request.is_secure and app.debug is False:
+        url = request.url.replace('http://', 'https://', 1)
+        return redirect(url, code=301)
+
+@app.route('/sitemap.xml')
+def sitemap():
+    pages = []
+    ten_days_ago = datetime.now() - timedelta(days=10)
+    
+    # Add static pages
+    pages.append({
+        'loc': url_for('index', _external=True),
+        'lastmod': datetime.now().strftime('%Y-%m-%d'),
+        'changefreq': 'daily',
+        'priority': '1.0'
+    })
+    
+    # Add dynamic content pages
+    conn = get_db_connection()
+    posts = conn.execute('SELECT id, updated_at FROM posts').fetchall()
+    for post in posts:
+        pages.append({
+            'loc': url_for('view_post', post_id=post['id'], _external=True),
+            'lastmod': post['updated_at'].strftime('%Y-%m-%d'),
+            'changefreq': 'weekly',
+            'priority': '0.8'
+        })
+    
+    conn.close()
+    return Response(
+        render_template('sitemap.xml', pages=pages),
+        mimetype='application/xml'
+    )
+
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=True)
+    init_db()  # Initialize database on startup
+    app.run(debug=True, port=5000)

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>{{ url_for('index', _external=True) }}</loc>
+        <changefreq>daily</changefreq>
+        <priority>1.0</priority>
+    </url>
+    {% for post in posts %}
+    <url>
+        <loc>{{ url_for('view_post', post_id=post.id, _external=True) }}</loc>
+        <lastmod>{{ post.updated_at }}</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    {% endfor %}
+</urlset>

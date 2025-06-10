@@ -1,24 +1,92 @@
 {% extends "base.html" %}
 
+{# Add SEO block in head #}
+{% block head %}
+    {# Meta tags for SEO #}
+    <meta name="description" content="ChainScope - Your source for cryptocurrency insights and blockchain knowledge. Discover the latest posts about crypto, blockchain technology, and Web3.">
+    <meta name="keywords" content="cryptocurrency, blockchain, crypto blog, blockchain technology, Web3, digital currency">
+    
+    {# Open Graph tags for social sharing #}
+    <meta property="og:title" content="ChainScope - Cryptocurrency & Blockchain Insights">
+    <meta property="og:description" content="Discover the latest posts about cryptocurrency, blockchain technology, and Web3 on ChainScope.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.url }}">
+    {% if posts and posts[0].image_filename %}
+    <meta property="og:image" content="{{ url_for('static', filename='uploads/' + posts[0].image_filename, _external=True) }}">
+    {% endif %}
+    
+    {# Twitter Card tags #}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="ChainScope - Cryptocurrency & Blockchain Insights">
+    <meta name="twitter:description" content="Discover the latest posts about cryptocurrency, blockchain technology, and Web3 on ChainScope.">
+    {% if posts and posts[0].image_filename %}
+    <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + posts[0].image_filename, _external=True) }}">
+    {% endif %}
+    
+    {# Canonical URL #}
+    <link rel="canonical" href="{{ request.url }}">
+
+    {# Add JSON-LD structured data for blog #}
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Blog",
+        "name": "ChainScope",
+        "description": "Your source for cryptocurrency insights and blockchain knowledge",
+        "url": "{{ request.url }}",
+        {% if posts %}
+        "blogPost": [
+            {% for post in posts[:5] %}
+            {
+                "@type": "BlogPosting",
+                "headline": "{{ post.title }}",
+                "datePublished": "{{ post.created_at }}",
+                "dateModified": "{{ post.updated_at if post.updated_at else post.created_at }}",
+                "author": {
+                    "@type": "Person",
+                    "name": "{{ post.username }}"
+                },
+                "url": "{{ url_for('view_post', post_id=post.id, _external=True) }}"
+                {% if post.image_filename %}
+                ,"image": "{{ url_for('static', filename='uploads/' + post.image_filename, _external=True) }}"
+                {% endif %}
+            }{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ]
+        {% endif %}
+    }
+    </script>
+{% endblock %}
+
 {% block title %}Home - ChainScope{% endblock %}
 
 {% block content %}
+{% if session.user_id %}
 <div class="homepage-header">
     <div class="header-content">
-        <div class="welcome-section">
-            <h1 class="welcome-title">⛓ Welcome to ChainScope</h1>
-            <p class="welcome-subtitle">Discover the latest insights in cryptocurrency, blockchain technology, and digital assets</p>
-        </div>
-        {% if session.user_id %}
         <div class="header-actions">
             <a href="{{ url_for('create_post') }}" class="btn btn-crypto btn-large">
-                <span class="btn-icon">✍</span>
-                Write New Post
+                <i class="fas fa-pen-to-square"></i>
+                Write New Postfeatured
             </a>
         </div>
-        {% endif %}
+
+        <!-- Add these new elements after the header-actions div -->
+        <div class="quick-stats">
+            <div class="stat-item">
+                <i class="fas fa-newspaper"></i>
+                <span class="stat-value">{{ posts|length }}</span>
+                <span class="stat-label">Total Posts</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-users"></i>
+                <span class="stat-value">{{ user_count }}</span>
+                <span class="stat-label">Community Members</span>
+            </div>
+        </div>
     </div>
 </div>
+{% endif %}
 
 {% if posts %}
 <div class="content-grid">
@@ -27,14 +95,14 @@
         {% set featured_post = posts[0] %}
         <div class="featured-post">
             <div class="featured-post-header">
-                <h2 class="section-title">🔥 Featured Post</h2>
+                <h2 class="section-title"><i class="fas fa-fire"></i> Featured Post</h2>
                 <div class="post-meta">
                     <span class="meta-item">
-                        <span class="meta-icon">👤</span>
+                        <i class="fas fa-user"></i>
                         {{ featured_post.username }}
                     </span>
                     <span class="meta-item">
-                        <span class="meta-icon">📅</span>
+                        <i class="far fa-calendar"></i>
                         {{ featured_post.created_at.split(' ')[0] if featured_post.created_at else 'Unknown' }}
                     </span>
                 </div>
@@ -48,7 +116,7 @@
                 </div>
                 {% else %}
                 <div class="featured-image placeholder-image">
-                    <div class="placeholder-icon">📄</div>
+                    <i class="far fa-file-alt placeholder-icon"></i>
                 </div>
                 {% endif %}
 
@@ -59,30 +127,19 @@
                         </a>
                     </h3>
                     
-                    {% if featured_post.excerpt %}
-                    <p class="featured-excerpt">{{ featured_post.excerpt }}</p>
-                    {% endif %}
-
-                    <div class="featured-actions">
-                        <a href="{{ url_for('view_post', post_id=featured_post.id) }}" class="btn btn-primary">
-                            <span class="btn-icon">👁</span>
-                            Read Full Post
-                        </a>
-                        
-                        {% if session.user_id == featured_post.author_id %}
-                        <div class="post-controls">
-                            <a href="{{ url_for('edit_post', post_id=featured_post.id) }}" 
-                               class="btn btn-secondary btn-small" title="Edit Post">
-                                <span class="btn-icon">✏️</span>
-                            </a>
-                            <a href="{{ url_for('delete_post', post_id=featured_post.id) }}" 
-                               class="btn btn-danger btn-small" title="Delete Post"
-                               onclick="return confirm('Are you sure you want to delete this post?')">
-                                <span class="btn-icon">🗑️</span>
-                            </a>
-                        </div>
+                    <div class="featured-excerpt">
+                        {% if featured_post.content %}
+                            {% set content = featured_post.content[:200] + '...' if featured_post.content|length > 200 else featured_post.content %}
+                            <p>{{ content|safe }}</p>
+                            {% if featured_post.content|length > 200 %}
+                                <a href="{{ url_for('view_post', post_id=featured_post.id) }}" class="read-more-link">
+                                    Read More <i class="fas fa-arrow-right"></i>
+                                </a>
+                            {% endif %}
                         {% endif %}
                     </div>
+
+                    
                 </div>
             </div>
         </div>
@@ -91,7 +148,7 @@
     <!-- Recent Posts Sidebar -->
     <div class="sidebar-section">
         <div class="recent-posts">
-            <h2 class="section-title">📚 Recent Posts</h2>
+            <h2 class="section-title"><i class="fas fa-book"></i> Recent Posts</h2>
             
             {% if posts|length > 1 %}
             <div class="posts-list">
@@ -106,7 +163,7 @@
                             </div>
                             {% else %}
                             <div class="post-thumbnail placeholder-thumb">
-                                <span class="thumb-icon">📄</span>
+                                <i class="far fa-file-alt thumb-icon"></i>
                             </div>
                             {% endif %}
 
@@ -169,37 +226,44 @@
 
 <div class="homepage-footer">
     <p class="footer-text">
-        <span class="footer-icon">💎</span>
-        Made with passion for the crypto community
+        <i class="fas fa-gem"></i>
+        Powered by Webbo 3.0
     </p>
 </div>
 
 {% else %}
 <div class="empty-state">
-    <div class="empty-icon">📝</div>
+    <div class="empty-icon">
+        <i class="fas fa-pen-fancy"></i>
+    </div>
     <h3 class="empty-title">No posts yet</h3>
     <p class="empty-subtitle">
         Be the first to share your cryptocurrency insights and blockchain knowledge!
     </p>
     {% if session.user_id %}
     <a href="{{ url_for('create_post') }}" class="btn btn-crypto btn-large">
-        <span class="btn-icon">✍</span>
+        <i class="fas fa-pen-to-square"></i>
         Write Your First Post
     </a>
     {% else %}
     <div class="empty-actions">
         <a href="{{ url_for('register') }}" class="btn btn-crypto btn-large">
-            <span class="btn-icon">🚀</span>
+            <i class="fas fa-rocket"></i>
             Join ChainScope
         </a>
         <a href="{{ url_for('login') }}" class="btn btn-secondary btn-large">
-            <span class="btn-icon">🔑</span>
+            <i class="fas fa-key"></i>
             Login
         </a>
     </div>
     {% endif %}
 </div>
 {% endif %}
+
+<!-- Add Font Awesome CSS if not already in base.html -->
+{% block head_extra %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% endblock %}
 
 <style>
     .homepage-header {
@@ -291,10 +355,17 @@
     }
 
     .section-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
         font-size: 1.5rem;
         font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-title i {
+        color: var(--accent-crypto);
+        font-size: 1.2em;
     }
 
     .post-meta {
@@ -342,8 +413,9 @@
     }
 
     .placeholder-icon {
-        font-size: 4rem;
-        opacity: 0.7;
+        font-size: 2.5rem;
+        color: var(--text-muted);
+        opacity: 0.5;
     }
 
     .featured-title {
@@ -367,7 +439,35 @@
         color: var(--text-secondary);
         font-size: 1.1rem;
         line-height: 1.6;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .featured-excerpt p {
+        margin-bottom: 1rem;
+    }
+
+    .read-more-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--accent-crypto);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .read-more-link:hover {
+        gap: 0.75rem;
+        color: var(--accent-crypto-hover);
+    }
+
+    .read-more-link i {
+        font-size: 0.9em;
+        transition: transform 0.3s ease;
+    }
+
+    .read-more-link:hover i {
+        transform: translateX(3px);
     }
 
     .featured-actions {
@@ -409,7 +509,7 @@
     .post-item {
         background: var(--bg-tertiary);
         border-radius: 12px;
-        padding: 1rem;
+        padding: 1.25rem;
         border: 1px solid var(--border-color);
         transition: all 0.3s ease;
         position: relative;
@@ -420,6 +520,23 @@
         color: inherit;
         display: block;
         transition: transform 0.3s ease;
+        position: relative;
+        isolation: isolate;
+    }
+
+    .post-item-link::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--gradient-crypto);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+        border-radius: 12px;
+    }
+
+    .post-item-link:hover::after {
+        opacity: 0.05;
     }
 
     .post-item-link:hover {
@@ -428,7 +545,7 @@
 
     .post-item:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: var(--shadow-glow);
     }
 
     .post-item-content {
@@ -473,6 +590,9 @@
         font-size: 1rem;
         font-weight: 600;
         color: var(--text-primary);
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
     }
 
     .post-link {
@@ -515,18 +635,29 @@
     }
 
     .action-btn {
-        background: var(--bg-primary);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--bg-secondary);
+        color: var(--text-primary);
         border: 1px solid var(--border-color);
-        padding: 0.25rem;
-        border-radius: 4px;
-        text-decoration: none;
-        font-size: 0.8rem;
         transition: all 0.3s ease;
     }
 
     .action-btn:hover {
-        background: var(--hover-bg);
         transform: scale(1.1);
+        background: var(--hover-bg);
+    }
+
+    .action-btn.edit-btn:hover {
+        color: var(--accent-crypto);
+    }
+
+    .action-btn.delete-btn:hover {
+        color: var(--color-danger);
     }
 
     .view-all {
@@ -615,7 +746,7 @@
     }
 
     .empty-icon {
-        font-size: 5rem;
+        font-size: 4rem;
         margin-bottom: 1rem;
         opacity: 0.7;
     }

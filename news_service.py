@@ -29,8 +29,20 @@ class NewsService:
         self.db = db_connection
         self.news_file = Path('static/data/news.json')
         self.news_file.parent.mkdir(parents=True, exist_ok=True)
+        self.last_fetch_time = None
+        self.cache_duration = timedelta(minutes=30)  # Cache for 30 minutes
 
-    def fetch_and_store_news(self):
+    def should_fetch_news(self):
+        """Check if we should fetch new news based on last fetch time"""
+        if not self.last_fetch_time:
+            return True
+        return datetime.now() - self.last_fetch_time > self.cache_duration
+
+    def fetch_and_store_news(self, force=False):
+        """Fetch and store news, with optional force refresh"""
+        if not force and not self.should_fetch_news():
+            return self.get_cached_news()
+
         print("Starting news fetch...")
         articles = []
         
@@ -46,9 +58,23 @@ class NewsService:
         
         print(f"Total articles to store: {len(articles)}")
         
-        # Store articles in database and JSON file
+        # Store articles and update last fetch time
         self._store_articles(articles)
         self._store_articles_json(articles)
+        self.last_fetch_time = datetime.now()
+        
+        return articles
+
+    def get_cached_news(self):
+        """Get news from cache"""
+        try:
+            if self.news_file.exists():
+                with open(self.news_file, 'r') as f:
+                    return json.load(f)
+            return []
+        except Exception as e:
+            print(f"Error reading cached news: {e}")
+            return []
 
     def _fetch_from_newsapi(self):
         try:
@@ -99,3 +125,44 @@ class NewsService:
                 'source': article.get('source', {}).get('title'),
                 'published_at': parser.parse(article.get('created_at'))
             }
+
+    def _store_articles(self, articles):
+        """Store articles in database with cleanup"""
+        try:
+            cursor = self.db.cursor()
+            
+            # Delete old articles (keep last 7 days)
+            cursor.execute('''
+                DELETE FROM news_articles 
+                WHERE created_at < datetime('now', '-7 days')
+            ''')
+            
+            # Insert new articles
+            for article in articles:
+                normalized = self._normalize_article(article)
+                cursor.execute('''
+                    INSERT OR REPLACE INTO news_articles 
+                    (title, description, url, image_url, source_name, published_at)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                ''', (
+                    normalized['title'],
+                    normalized['description'],
+                    normalized['url'],
+                    normalized['image_url'],
+                    normalized['source'],
+                    normalized['published_at']
+                ))
+            
+            self.db.commit()
+        except Exception as e:
+            print(f"Error storing articles: {e}")
+            self.db.rollback()
+
+    def _store_articles_json(self, articles):
+        """Store articles in JSON file"""
+        try:
+            normalized_articles = [self._normalize_article(a) for a in articles]
+            with open(self.news_file, 'w') as f:
+                json.dump(normalized_articles, f, default=str)
+        except Exception as e:
+            print(f"Error storing articles to JSON: {e}")

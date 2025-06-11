@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}{{ meta_title }}{% endblock %}
+
+{% block content %}
+<div class="about-container">
+    <section class="about-hero">
+        <h1>About ChainScope</h1>
+        <p class="subtitle">Your Gateway to Cryptocurrency Insights</p>
+    </section>
+
+    <section class="about-content">
+        <div class="mission-section">
+            <h2>Our Mission</h2>
+            <p>ChainScope is dedicated to providing clear, actionable insights into the cryptocurrency and blockchain space. We believe in making complex blockchain concepts accessible to everyone.</p>
+        </div>
+
+        {% if stats %}
+        <div class="stats-section">
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value">{{ stats.user_count }}</div>
+                    <div class="stat-label">Community Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ stats.post_count }}</div>
+                    <div class="stat-label">Articles Published</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">{{ stats.comment_count }}</div>
+                    <div class="stat-label">Community Insights</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="contact-section">
+            <h2>Connect With Us</h2>
+            <div class="social-grid">
+                <a href="https://twitter.com/chainscope" class="social-card" target="_blank">
+                    <i class="fab fa-x-twitter"></i>
+                    <h3>Follow on X</h3>
+                    <p>Stay updated with crypto news</p>
+                </a>
+                <a href="https://github.com/chainscope" class="social-card" target="_blank">
+                    <i class="fab fa-github"></i>
+                    <h3>GitHub</h3>
+                    <p>Check out our open source projects</p>
+                </a>
+                <a href="https://ko-fi.com/chainscope" class="social-card" target="_blank">
+                    <i class="fas fa-mug-hot"></i>
+                    <h3>Support Us</h3>
+                    <p>Buy us a coffee</p>
+                </a>
+                <a href="mailto:hello@chainscope.com" class="social-card">
+                    <i class="fas fa-envelope"></i>
+                    <h3>Email Us</h3>
+                    <p>Get in touch</p>
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+<style>
+.about-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.about-hero {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.about-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    background: var(--gradient-crypto);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+}
+
+.mission-section {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.mission-section h2 {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+}
+
+.mission-section p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.stats-section {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 16px;
+}
+
+.stat-card {
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--accent-crypto);
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+}
+
+.social-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.social-card {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 16px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-card:hover {
+    transform: translateY(-5px);
+    background: var(--bg-tertiary);
+}
+
+.social-card i {
+    font-size: 2rem;
+    color: var(--accent-crypto);
+    margin-bottom: 1rem;
+}
+
+.social-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.social-card p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .about-hero h1 {
+        font-size: 2.5rem;
+    }
+
+    .stat-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .social-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

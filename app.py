@@ -5,6 +5,11 @@ import sqlite3
 import os
 from datetime import datetime, timedelta
 import uuid
+from news_service import NewsService
+from apscheduler.schedulers.background import BackgroundScheduler
+from pathlib import Path
+import json
+import threading
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-change-this'
@@ -76,6 +81,56 @@ def init_db():
         )
     ''')
     
+    # News Categories table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS news_categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT UNIQUE NOT NULL,
+            slug TEXT UNIQUE NOT NULL,
+            description TEXT
+        )
+    ''')
+    
+    # News Articles table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS news_articles (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            description TEXT,
+            url TEXT UNIQUE NOT NULL,
+            image_url TEXT,
+            source_name TEXT,
+            category_id INTEGER,
+            published_at TIMESTAMP,
+            sentiment FLOAT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (category_id) REFERENCES news_categories (id)
+        )
+    ''')
+
+    # Add Subscribers table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS subscribers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Insert default categories
+    categories = [
+        ('Bitcoin', 'bitcoin', 'Bitcoin related news'),
+        ('Ethereum', 'ethereum', 'Ethereum and smart contract news'),
+        ('DeFi', 'defi', 'Decentralized Finance news'),
+        ('NFTs', 'nfts', 'Non-Fungible Tokens news'),
+        ('Regulation', 'regulation', 'Crypto regulations and legal news')
+    ]
+    
+    cursor.executemany(
+        'INSERT OR IGNORE INTO news_categories (name, slug, description) VALUES (?, ?, ?)',
+        categories
+    )
+    
     conn.commit()
     conn.close()
 
@@ -87,25 +142,49 @@ def get_db_connection():
 @app.route('/')
 def index():
     conn = get_db_connection()
+    try:
+        # Get fresh news first
+        news = update_news()
+        
+        if not news:
+            # Fallback to database if update fails
+            news = conn.execute('''
+                SELECT a.*, c.name as category_name, c.slug as category_slug
+                FROM news_articles a
+                LEFT JOIN news_categories c ON a.category_id = c.id
+                ORDER BY a.published_at DESC
+                LIMIT 6
+            ''').fetchall()
+        
+        # Get posts with author info and updated_at time
+        posts = conn.execute('''
+            SELECT p.*, u.username, 
+                   COALESCE(p.updated_at, p.created_at) as updated_at
+            FROM posts p 
+            JOIN users u ON p.author_id = u.id 
+            ORDER BY p.created_at DESC
+            LIMIT 5
+        ''').fetchall()
+        
+        # Get total user count for stats
+        user_count = conn.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
+        
+        return render_template('index.html', 
+                             posts=posts,
+                             news=news,  # Make sure this is included
+                             user_count=user_count,
+                             meta_title="ChainScope - Cryptocurrency & Blockchain Insights",
+                             meta_description="Your source for cryptocurrency insights and blockchain knowledge.")
     
-    # Get posts with author info and updated_at time
-    posts = conn.execute('''
-        SELECT p.*, u.username, 
-               COALESCE(p.updated_at, p.created_at) as updated_at
-        FROM posts p 
-        JOIN users u ON p.author_id = u.id 
-        ORDER BY p.created_at DESC
-    ''').fetchall()
-    
-    # Get total user count for stats
-    user_count = conn.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
-    
-    conn.close()
-    return render_template('index.html', 
-                         posts=posts, 
-                         user_count=user_count,
-                         meta_title="ChainScope - Cryptocurrency & Blockchain Insights",
-                         meta_description="Your source for cryptocurrency insights and blockchain knowledge. Discover the latest posts about crypto, blockchain technology, and Web3.")
+    except Exception as e:
+        print(f"Error in index route: {e}")
+        return render_template('index.html', 
+                             posts=[],
+                             news=[],
+                             user_count=0,
+                             meta_title="ChainScope - Error Loading Content")
+    finally:
+        conn.close()
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -490,6 +569,210 @@ def sitemap():
         mimetype='application/xml'
     )
 
+scheduler = BackgroundScheduler()
+
+@app.route('/news')
+def news():
+    conn = get_db_connection()
+    try:
+        # Get fresh news first
+        news_articles = update_news()
+        
+        if not news_articles:
+            # Fallback to database if update fails
+            news_articles = conn.execute('''
+                SELECT a.*, c.name as category_name, c.slug as category_slug,
+                       datetime(a.published_at) as formatted_date
+                FROM news_articles a
+                LEFT JOIN news_categories c ON a.category_id = c.id
+                ORDER BY a.published_at DESC
+                LIMIT 50
+            ''').fetchall()
+        
+        # Get categories with counts
+        categories = conn.execute('''
+            SELECT c.*, COUNT(a.id) as article_count
+            FROM news_categories c
+            LEFT JOIN news_articles a ON c.id = a.category_id
+            GROUP BY c.id
+            ORDER BY article_count DESC
+        ''').fetchall()
+        
+        return render_template('news.html',
+                             categories=categories,
+                             articles=news_articles,
+                             meta_title="Crypto News - ChainScope",
+                             meta_description="Latest cryptocurrency and blockchain news")
+                             
+    except Exception as e:
+        print(f"Error in news route: {e}")
+        return render_template('news.html',
+                             categories=[],
+                             articles=[],
+                             meta_title="News - Error Loading Content")
+    finally:
+        conn.close()
+
+@app.route('/news/category/<slug>')
+def news_category(slug):
+    conn = get_db_connection()
+    try:
+        # Get category info
+        category = conn.execute('''
+            SELECT c.*, COUNT(a.id) as article_count
+            FROM news_categories c
+            LEFT JOIN news_articles a ON c.id = a.category_id
+            WHERE c.slug = ?
+            GROUP BY c.id
+        ''', (slug,)).fetchone()
+        
+        if not category:
+            flash('Category not found')
+            return redirect(url_for('news'))
+        
+        # Get articles for this category
+        articles = conn.execute('''
+            SELECT a.*, c.name as category_name, c.slug as category_slug,
+                   datetime(a.published_at) as formatted_date
+            FROM news_articles a
+            JOIN news_categories c ON a.category_id = c.id
+            WHERE c.slug = ?
+            ORDER BY a.published_at DESC
+            LIMIT 50
+        ''', (slug,)).fetchall()
+        
+        return render_template('news_category.html',
+                             category=category,
+                             articles=articles,
+                             meta_title=f"{category['name']} News - ChainScope",
+                             meta_description=f"Latest {category['name']} news and updates")
+                             
+    except Exception as e:
+        print(f"Error in category route: {e}")
+        return redirect(url_for('news'))
+    finally:
+        conn.close()
+
+# Add this function to update news periodically
+def update_news():
+    with app.app_context():
+        conn = get_db_connection()
+        try:
+            # Fetch fresh news
+            news_service = NewsService(conn)
+            news_service.fetch_and_store_news()
+            
+            # Get latest news with category info
+            news = conn.execute('''
+                SELECT a.*, c.name as category_name, c.slug as category_slug,
+                       datetime(a.published_at) as formatted_date
+                FROM news_articles a
+                LEFT JOIN news_categories c ON a.category_id = c.id
+                ORDER BY a.published_at DESC
+                LIMIT 12
+            ''').fetchall()
+            
+            return [dict(row) for row in news]  # Convert rows to dictionaries
+            
+        except Exception as e:
+            print(f"Error updating news: {e}")
+            return None
+        finally:
+            conn.close()
+
+# Add this function after your app initialization
+def init_app(app):
+    # Initialize database
+    init_db()
+    
+    # Initialize news fetch on startup
+    with app.app_context():
+        update_news()
+    
+    # Start scheduler for periodic updates
+    scheduler = BackgroundScheduler(daemon=True)
+    scheduler.add_job(
+        func=update_news,
+        trigger="interval",
+        minutes=30,
+        max_instances=1,
+        next_run_time=datetime.now()
+    )
+    scheduler.start()
+
+# Modify the bottom of the file to use init_app:
 if __name__ == '__main__':
-    init_db()  # Initialize database on startup
+    init_app(app)
     app.run(debug=True, port=5000)
+
+@app.route('/test_news')
+def test_news():
+    conn = get_db_connection()
+    news_service = NewsService(conn)
+    news_service.fetch_and_store_news()
+    
+    # Fetch stored news
+    news = conn.execute('''
+        SELECT a.*, c.name as category_name, c.slug as category_slug
+        FROM news_articles a
+        LEFT JOIN news_categories c ON a.category_id = c.id
+        ORDER BY a.published_at DESC
+        LIMIT 10
+    ''').fetchall()
+    
+    conn.close()
+    
+    # Return as JSON for testing
+    return jsonify([{
+        'title': article['title'],
+        'description': article['description'],
+        'url': article['url'],
+        'source': article['source_name'],
+        'category': article['category_name'],
+        'published_at': article['published_at']
+    } for article in news])
+
+@app.route('/about')
+def about():
+    """About page route"""
+    try:
+        conn = get_db_connection()
+        # Get some stats for the about page
+        stats = {
+            'user_count': conn.execute('SELECT COUNT(*) FROM users').fetchone()[0],
+            'post_count': conn.execute('SELECT COUNT(*) FROM posts').fetchone()[0],
+            'comment_count': conn.execute('SELECT COUNT(*) FROM comments').fetchone()[0]
+        }
+        conn.close()
+        
+        return render_template('about.html',
+                             title="About ChainScope",
+                             meta_title="About ChainScope - Our Story",
+                             meta_description="Learn about ChainScope's mission to provide insightful cryptocurrency and blockchain analysis.",
+                             stats=stats)
+    except Exception as e:
+        print(f"Error loading about page: {e}")
+        return render_template('about.html',
+                             title="About ChainScope",
+                             meta_title="About ChainScope - Our Story",
+                             meta_description="Learn about ChainScope's mission to provide insightful cryptocurrency and blockchain analysis.",
+                             stats=None)
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    if not request.form.get('email'):
+        return jsonify({'error': 'Email is required'}), 400
+        
+    email = request.form.get('email')
+    
+    conn = get_db_connection()
+    try:
+        conn.execute('INSERT INTO subscribers (email) VALUES (?)', (email,))
+        conn.commit()
+        return jsonify({'message': 'Successfully subscribed!'})
+    except sqlite3.IntegrityError:
+        return jsonify({'error': 'Email already subscribed'}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        conn.close()

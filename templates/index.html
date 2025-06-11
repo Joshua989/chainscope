@@ -1,854 +1,701 @@
 {% extends "base.html" %}
 
-{# Add SEO block in head #}
 {% block head %}
-    {# Meta tags for SEO #}
-    <meta name="description" content="ChainScope - Your source for cryptocurrency insights and blockchain knowledge. Discover the latest posts about crypto, blockchain technology, and Web3.">
-    <meta name="keywords" content="cryptocurrency, blockchain, crypto blog, blockchain technology, Web3, digital currency">
-    
-    {# Open Graph tags for social sharing #}
-    <meta property="og:title" content="ChainScope - Cryptocurrency & Blockchain Insights">
-    <meta property="og:description" content="Discover the latest posts about cryptocurrency, blockchain technology, and Web3 on ChainScope.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ request.url }}">
-    {% if posts and posts[0].image_filename %}
-    <meta property="og:image" content="{{ url_for('static', filename='uploads/' + posts[0].image_filename, _external=True) }}">
+<meta name="description" content="ChainScope - Your source for cryptocurrency insights and blockchain knowledge. Discover the latest posts about crypto, blockchain technology, and Web3.">
+<meta name="keywords" content="cryptocurrency, blockchain, crypto blog, blockchain technology, Web3, digital currency">
+<meta property="og:title" content="ChainScope - Cryptocurrency & Blockchain Insights">
+<meta property="og:description" content="Discover the latest posts about cryptocurrency, blockchain technology, and Web3 on ChainScope.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.url }}">
+{% if posts and posts[0].image_filename %}
+<meta property="og:image" content="{{ url_for('static', filename='uploads/' + posts[0].image_filename, _external=True) }}">
+{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ChainScope - Cryptocurrency & Blockchain Insights">
+<meta name="twitter:description" content="Discover the latest posts about cryptocurrency, blockchain technology, and Web3 on ChainScope.">
+{% if posts and posts[0].image_filename %}
+<meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + posts[0].image_filename, _external=True) }}">
+{% endif %}
+<link rel="canonical" href="{{ request.url }}">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "ChainScope",
+    "description": "Your source for cryptocurrency insights and blockchain knowledge",
+    "url": "{{ request.url }}",
+    {% if posts %}
+    "blogPost": [
+        {% for post in posts[:5] %}
+        {
+            "@type": "BlogPosting",
+            "headline": "{{ post.title }}",
+            "datePublished": "{{ post.created_at }}",
+            "dateModified": "{{ post.updated_at if post.updated_at else post.created_at }}",
+            "author": {
+                "@type": "Person",
+                "name": "{{ post.username }}"
+            },
+            "url": "{{ url_for('view_post', post_id=post.id, _external=True) }}"
+            {% if post.image_filename %}
+            ,"image": "{{ url_for('static', filename='uploads/' + post.image_filename, _external=True) }}"
+            {% endif %}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]
     {% endif %}
-    
-    {# Twitter Card tags #}
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="ChainScope - Cryptocurrency & Blockchain Insights">
-    <meta name="twitter:description" content="Discover the latest posts about cryptocurrency, blockchain technology, and Web3 on ChainScope.">
-    {% if posts and posts[0].image_filename %}
-    <meta name="twitter:image" content="{{ url_for('static', filename='uploads/' + posts[0].image_filename, _external=True) }}">
-    {% endif %}
-    
-    {# Canonical URL #}
-    <link rel="canonical" href="{{ request.url }}">
-
-    {# Add JSON-LD structured data for blog #}
-    <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "Blog",
-        "name": "ChainScope",
-        "description": "Your source for cryptocurrency insights and blockchain knowledge",
-        "url": "{{ request.url }}",
-        {% if posts %}
-        "blogPost": [
-            {% for post in posts[:5] %}
-            {
-                "@type": "BlogPosting",
-                "headline": "{{ post.title }}",
-                "datePublished": "{{ post.created_at }}",
-                "dateModified": "{{ post.updated_at if post.updated_at else post.created_at }}",
-                "author": {
-                    "@type": "Person",
-                    "name": "{{ post.username }}"
-                },
-                "url": "{{ url_for('view_post', post_id=post.id, _external=True) }}"
-                {% if post.image_filename %}
-                ,"image": "{{ url_for('static', filename='uploads/' + post.image_filename, _external=True) }}"
-                {% endif %}
-            }{% if not loop.last %},{% endif %}
-            {% endfor %}
-        ]
-        {% endif %}
-    }
-    </script>
+}
+</script>
 {% endblock %}
 
 {% block title %}Home - ChainScope{% endblock %}
 
 {% block content %}
-{% if session.user_id %}
-<div class="homepage-header">
-    <div class="header-content">
-        <div class="header-actions">
-            <a href="{{ url_for('create_post') }}" class="btn btn-crypto btn-large">
-                <i class="fas fa-pen-to-square"></i>
-                Write New Postfeatured
-            </a>
-        </div>
-
-        <!-- Add these new elements after the header-actions div -->
-        <div class="quick-stats">
-            <div class="stat-item">
-                <i class="fas fa-newspaper"></i>
-                <span class="stat-value">{{ posts|length }}</span>
-                <span class="stat-label">Total Posts</span>
-            </div>
-            <div class="stat-item">
-                <i class="fas fa-users"></i>
-                <span class="stat-value">{{ user_count }}</span>
-                <span class="stat-label">Community Members</span>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-{% if posts %}
-<div class="content-grid">
-    <!-- Featured Post (Latest) -->
-    <div class="featured-section">
-        {% set featured_post = posts[0] %}
-        <div class="featured-post">
-            <div class="featured-post-header">
-                <h2 class="section-title"><i class="fas fa-fire"></i> Featured Post</h2>
-                <div class="post-meta">
-                    <span class="meta-item">
-                        <i class="fas fa-user"></i>
-                        {{ featured_post.username }}
-                    </span>
-                    <span class="meta-item">
-                        <i class="far fa-calendar"></i>
-                        {{ featured_post.created_at.split(' ')[0] if featured_post.created_at else 'Unknown' }}
-                    </span>
-                </div>
-            </div>
-
-            <div class="featured-post-content">
-                {% if featured_post.image_filename %}
-                <div class="featured-image">
-                    <img src="{{ url_for('static', filename='uploads/' + featured_post.image_filename) }}" 
-                         alt="{{ featured_post.title }}" class="post-image">
-                </div>
+<div class="main-container">
+    {% if news %}
+    <section class="news-section">
+        <h2>Latest News</h2>
+        <div class="news-scroll">
+            {% for article in news[:10] %}
+            <article class="news-item">
+                {% if article.image_url %}
+                <img src="{{ article.image_url }}" alt="{{ article.title }}">
                 {% else %}
-                <div class="featured-image placeholder-image">
-                    <i class="far fa-file-alt placeholder-icon"></i>
+                <div class="news-placeholder">
+                    <i class="fas fa-newspaper"></i>
                 </div>
                 {% endif %}
-
-                <div class="featured-text">
-                    <h3 class="featured-title">
-                        <a href="{{ url_for('view_post', post_id=featured_post.id) }}" class="title-link">
-                            {{ featured_post.title }}
-                        </a>
-                    </h3>
-                    
-                    <div class="featured-excerpt">
-                        {% if featured_post.content %}
-                            {% set content = featured_post.content[:200] + '...' if featured_post.content|length > 200 else featured_post.content %}
-                            <p>{{ content|safe }}</p>
-                            {% if featured_post.content|length > 200 %}
-                                <a href="{{ url_for('view_post', post_id=featured_post.id) }}" class="read-more-link">
-                                    Read More <i class="fas fa-arrow-right"></i>
-                                </a>
-                            {% endif %}
+                <div class="news-content">
+                    <h3><a href="{{ article.url }}" target="_blank">{{ article.title|truncate(80) }}</a></h3>
+                    {% if article.description %}
+                    <p>{{ article.description|truncate(120) }}</p>
+                    {% endif %}
+                    <div class="news-meta">
+                        {% if article.source_name %}
+                        <span>{{ article.source_name }}</span>
+                        {% endif %}
+                        {% if article.category_name %}
+                        <span class="category">{{ article.category_name }}</span>
                         {% endif %}
                     </div>
-
-                    
                 </div>
+            </article>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if posts %}
+    <section class="featured-section">
+        {% set featured_post = posts[0] %}
+        <div class="featured-post">
+            {% if featured_post.image_filename %}
+            <img src="{{ url_for('static', filename='uploads/' + featured_post.image_filename) }}" alt="{{ featured_post.title }}">
+            {% else %}
+            <div class="featured-placeholder">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            {% endif %}
+            <div class="featured-content">
+                <h2><a href="{{ url_for('view_post', post_id=featured_post.id) }}">{{ featured_post.title }}</a></h2>
+                <div class="featured-meta">
+                    <span><i class="fas fa-user"></i>{{ featured_post.username }}</span>
+                    <span><i class="fas fa-calendar"></i>{{ featured_post.created_at.split(' ')[0] if featured_post.created_at else 'Unknown' }}</span>
+                </div>
+                {% if featured_post.content %}
+                <p>{{ (featured_post.content[:200] + '...') if featured_post.content|length > 200 else featured_post.content|safe }}</p>
+                {% endif %}
+                {% if featured_post.content|length > 200 %}
+                <a href="{{ url_for('view_post', post_id=featured_post.id) }}" class="read-more">Read More <i class="fas fa-arrow-right"></i></a>
+                {% endif %}
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Recent Posts Sidebar -->
-    <div class="sidebar-section">
-        <div class="recent-posts">
-            <h2 class="section-title"><i class="fas fa-book"></i> Recent Posts</h2>
-            
-            {% if posts|length > 1 %}
-            <div class="posts-list">
-                {% for post in posts[1:6] %}
-                <a href="{{ url_for('view_post', post_id=post.id) }}" class="post-item-link">
-                    <div class="post-item">
-                        <div class="post-item-content">
-                            {% if post.image_filename %}
-                            <div class="post-thumbnail">
-                                <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" 
-                                     alt="{{ post.title }}">
-                            </div>
-                            {% else %}
-                            <div class="post-thumbnail placeholder-thumb">
-                                <i class="far fa-file-alt thumb-icon"></i>
-                            </div>
-                            {% endif %}
-
-                            <div class="post-details">
-                                <h4 class="post-item-title">
-                                    {{ post.title[:50] + '...' if post.title|length > 50 else post.title }}
-                                </h4>
-                                <div class="post-item-meta">
-                                    <span class="meta-author">{{ post.username }}</span>
-                                    <span class="meta-date">{{ post.created_at.split(' ')[0] if post.created_at else 'Unknown' }}</span>
-                                </div>
-                                {% if post.excerpt %}
-                                <p class="post-item-excerpt">
-                                    {{ post.excerpt[:80] + '...' if post.excerpt|length > 80 else post.excerpt }}
-                                </p>
-                                {% endif %}
-                            </div>
+    <section class="recent-section">
+        <h2>Latest Posts</h2>
+        <div class="posts-scroll">
+            {% for post in posts[1:15] %}
+            <article class="post-item">
+                <a href="{{ url_for('view_post', post_id=post.id) }}">
+                    {% if post.image_filename %}
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_filename) }}" alt="{{ post.title }}">
+                    {% else %}
+                    <div class="post-placeholder">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    {% endif %}
+                    <div class="post-content">
+                        <h3>{{ (post.title[:45] + '...') if post.title|length > 45 else post.title }}</h3>
+                        <div class="post-meta">
+                            <span>{{ post.username }}</span>
+                            <span>{{ post.created_at.split(' ')[0] if post.created_at else 'Unknown' }}</span>
                         </div>
-
-                        {% if session.user_id == post.author_id %}
-                        <div class="post-item-actions">
-                            <a href="{{ url_for('edit_post', post_id=post.id) }}" 
-                               class="action-btn edit-btn" title="Edit"
-                               onclick="event.stopPropagation();">
-                                ✏️
-                            </a>
-                            <a href="{{ url_for('delete_post', post_id=post.id) }}" 
-                               class="action-btn delete-btn" title="Delete"
-                               onclick="event.stopPropagation(); return confirm('Are you sure?');">
-                                🗑️
-                            </a>
-                        </div>
+                        {% if post.excerpt %}
+                        <p>{{ (post.excerpt[:70] + '...') if post.excerpt|length > 70 else post.excerpt }}</p>
                         {% endif %}
                     </div>
                 </a>
-                {% endfor %}
-            </div>
-
-            {% if posts|length > 6 %}
-            <div class="view-all">
-                <a href="#" class="btn btn-secondary btn-full">
-                    <span class="btn-icon">📋</span>
-                    View All Posts ({{ posts|length }})
-                </a>
-            </div>
-            {% endif %}
-
-            {% else %}
-            <div class="no-more-posts">
-                <p class="text-muted">This is the only post so far!</p>
-            </div>
-            {% endif %}
+                {% if session.user_id == post.author_id %}
+                <div class="post-actions">
+                    <a href="{{ url_for('edit_post', post_id=post.id) }}" onclick="event.stopPropagation();">✏️</a>
+                    <a href="{{ url_for('delete_post', post_id=post.id) }}" onclick="event.stopPropagation(); return confirm('Are you sure?');">🗑️</a>
+                </div>
+                {% endif %}
+            </article>
+            {% endfor %}
         </div>
-
-        <!-- Crypto Stats Widget -->
-        
-              
-    </div>
-</div>
-
-<div class="homepage-footer">
-    <p class="footer-text">
-        <i class="fas fa-gem"></i>
-        Powered by Webbo 3.0
-    </p>
-</div>
-
-{% else %}
-<div class="empty-state">
-    <div class="empty-icon">
-        <i class="fas fa-pen-fancy"></i>
-    </div>
-    <h3 class="empty-title">No posts yet</h3>
-    <p class="empty-subtitle">
-        Be the first to share your cryptocurrency insights and blockchain knowledge!
-    </p>
-    {% if session.user_id %}
-    <a href="{{ url_for('create_post') }}" class="btn btn-crypto btn-large">
-        <i class="fas fa-pen-to-square"></i>
-        Write Your First Post
-    </a>
+    </section>
     {% else %}
-    <div class="empty-actions">
-        <a href="{{ url_for('register') }}" class="btn btn-crypto btn-large">
-            <i class="fas fa-rocket"></i>
-            Join ChainScope
-        </a>
-        <a href="{{ url_for('login') }}" class="btn btn-secondary btn-large">
-            <i class="fas fa-key"></i>
-            Login
-        </a>
+    <div class="empty-state">
+        <i class="fas fa-pen-fancy"></i>
+        <h3>No posts yet</h3>
+        <p>Be the first to share your cryptocurrency insights!</p>
+        {% if session.user_id %}
+        <a href="{{ url_for('create_post') }}" class="btn-primary">Write Your First Post</a>
+        {% else %}
+        <div class="empty-actions">
+            <a href="{{ url_for('register') }}" class="btn-primary">Join ChainScope</a>
+            <a href="{{ url_for('login') }}" class="btn-secondary">Login</a>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 </div>
-{% endif %}
 
-<!-- Add Font Awesome CSS if not already in base.html -->
-{% block head_extra %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-{% endblock %}
+<section class="newsletter-section">
+    <div class="newsletter-content">
+        <h2>Stay Updated</h2>
+        <p>Get the latest crypto insights delivered to your inbox</p>
+        <form id="subscribe-form" class="subscribe-form">
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-paper-plane"></i>
+                Subscribe
+            </button>
+        </form>
+        <div id="subscribe-message"></div>
+    </div>
+</section>
 
 <style>
-    .homepage-header {
-        background: var(--bg-secondary);
-        border-radius: 20px;
-        padding: 2rem;
-        margin-bottom: 2rem;
-        border: 1px solid var(--border-color);
-        position: relative;
-        overflow: hidden;
-    }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    .homepage-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 20% 20%, rgba(245, 158, 11, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
-        pointer-events: none;
-    }
+.main-container {
+    display: flex;
+    height: 100vh;
+    gap: 1rem;
+    padding: 1rem;
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+}
 
-    .header-content {
-        position: relative;
-        z-index: 2;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 2rem;
-    }
+.news-section,
+.recent-section {
+    width: 20%;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 0.5rem;
+    overflow: hidden;
+    position: relative;
+}
 
-    .welcome-title {
-        font-size: 2.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        background: var(--gradient-crypto);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
+.featured-section {
+    width: 60%;
+    background: var(--bg-tertiary);
+    border-radius: 16px;
+    padding: 2rem;
+    overflow: hidden;
+    position: relative;
+}
 
-    .welcome-subtitle {
-        font-size: 1.1rem;
-        color: var(--text-secondary);
-        margin: 0;
-    }
+.news-section::before,
+.recent-section::before,
+.featured-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #f59e0b, #3b82f6, #10b981);
+}
 
-    .content-grid {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 2rem;
-        margin-bottom: 2rem;
-    }
+.news-section h2,
+.recent-section h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    .featured-section {
-        min-height: 500px;
-    }
+.news-section h2::before {
+    content: '📰';
+    font-size: 1.1rem;
+}
 
-    .featured-post {
-        background: var(--bg-secondary);
-        border-radius: 20px;
-        padding: 2rem;
-        border: 1px solid var(--border-color);
-        height: 100%;
-        position: relative;
-        overflow: hidden;
-        box-shadow: var(--shadow-glow);
-    }
+.recent-section h2::before {
+    content: '📝';
+    font-size: 1.1rem;
+}
 
-    .featured-post::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: 
-            radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 50%);
-        pointer-events: none;
-    }
+.news-scroll,
+.posts-scroll {
+    height: calc(100vh - 120px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #3b82f6 transparent;
+}
 
-    .featured-post-header {
-        position: relative;
-        z-index: 2;
-        margin-bottom: 1.5rem;
-    }
+.news-scroll::-webkit-scrollbar,
+.posts-scroll::-webkit-scrollbar {
+    width: 4px;
+}
 
-    .section-title {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-    }
+.news-scroll::-webkit-scrollbar-track,
+.posts-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-    .section-title i {
-        color: var(--accent-crypto);
-        font-size: 1.2em;
-    }
+.news-scroll::-webkit-scrollbar-thumb,
+.posts-scroll::-webkit-scrollbar-thumb {
+    background: #3b82f6;
+    border-radius: 2px;
+}
 
-    .post-meta {
-        display: flex;
-        gap: 1.5rem;
-        color: var(--text-muted);
-        font-size: 0.9rem;
-    }
+.news-item,
+.post-item {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
 
-    .meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+.news-item:hover,
+.post-item:hover {
+    background: var(--hover-bg);
+    box-shadow: var(--shadow-glow);
+}
 
-    .meta-icon {
-        font-size: 1rem;
-    }
+.news-item img,
+.post-item img {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+}
 
-    .featured-post-content {
-        position: relative;
-        z-index: 2;
-    }
+.news-placeholder,
+.post-placeholder,
+.featured-placeholder {
+    width: 100%;
+    height: 80px;
+    background: linear-gradient(45deg, #374151, #4b5563);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+}
 
-    .featured-image {
-        width: 100%;
-        height: 250px;
-        border-radius: 12px;
-        overflow: hidden;
-        margin-bottom: 1.5rem;
-        background: var(--bg-tertiary);
-    }
+.featured-placeholder {
+    height: 300px;
+}
 
-    .featured-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
+.news-placeholder i,
+.post-placeholder i,
+.featured-placeholder i {
+    font-size: 1.5rem;
+    color: rgba(255, 255, 255, 0.4);
+}
 
-    .placeholder-image {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--gradient-1);
-    }
+.featured-placeholder i {
+    font-size: 3rem;
+}
 
-    .placeholder-icon {
-        font-size: 2.5rem;
-        color: var(--text-muted);
-        opacity: 0.5;
-    }
+.news-content h3,
+.post-content h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+}
 
-    .featured-title {
-        margin-bottom: 1rem;
-    }
+.news-content h3 a,
+.post-content h3,
+.featured-content h2 a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
 
-    .title-link {
-        text-decoration: none;
-        color: var(--text-primary);
-        font-size: 1.75rem;
-        font-weight: 600;
-        line-height: 1.3;
-        transition: color 0.3s ease;
-    }
+.news-content h3 a:hover,
+.featured-content h2 a:hover {
+    color: #f59e0b;
+}
 
-    .title-link:hover {
-        color: var(--accent-crypto);
-    }
+.news-content p,
+.post-content p {
+    color: var(--text-secondary);
+}
 
-    .featured-excerpt {
-        color: var(--text-secondary);
-        font-size: 1.1rem;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
+.news-meta,
+.post-meta {
+    color: var(--text-muted);
+}
 
-    .featured-excerpt p {
-        margin-bottom: 1rem;
-    }
+.news-meta .category {
+    background: #f59e0b;
+    color: #000;
+    padding: 0.2rem 0.5rem;
+    border-radius: 10px;
+    font-weight: 500;
+}
 
-    .read-more-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--accent-crypto);
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s ease;
-    }
+.post-item a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
 
-    .read-more-link:hover {
-        gap: 0.75rem;
-        color: var(--accent-crypto-hover);
-    }
+.post-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
 
-    .read-more-link i {
-        font-size: 0.9em;
-        transition: transform 0.3s ease;
-    }
+.post-item:hover .post-actions {
+    opacity: 1;
+}
 
-    .read-more-link:hover i {
-        transform: translateX(3px);
-    }
+.post-actions a {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
 
-    .featured-actions {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
+.post-actions a:hover {
+    background: rgba(59, 130, 246, 0.8);
+    transform: scale(1.1);
+}
 
-    .post-controls {
-        display: flex;
-        gap: 0.5rem;
-    }
+.featured-post {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
 
-    .btn-small {
-        padding: 0.5rem;
-        font-size: 0.9rem;
-        min-width: auto;
-    }
+.featured-post img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
 
-    .sidebar-section {
-        display: flex;
+.featured-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.featured-content h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.featured-content h2 a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.featured-meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.featured-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.featured-meta i {
+    color: #f59e0b;
+}
+
+.featured-content p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    flex: 1;
+}
+
+.read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #f59e0b;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    align-self: flex-start;
+}
+
+.read-more:hover {
+    gap: 0.75rem;
+    color: #fbbf24;
+}
+
+.read-more i {
+    transition: transform 0.3s ease;
+}
+
+.read-more:hover i {
+    transform: translateX(3px);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100%;
+    width: 100%;
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #f59e0b;
+    margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    max-width: 400px;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #000;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    transform: translateY(-2px);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+.empty-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.newsletter-section {
+    background: var(--bg-secondary);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.newsletter-content h2 {
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.newsletter-content p {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.subscribe-form {
+    display: flex;
+    gap: 1rem;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.subscribe-form input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.subscribe-form button {
+    padding: 0.75rem 1.5rem;
+    white-space: nowrap;
+}
+
+#subscribe-message {
+    margin-top: 1rem;
+}
+
+.alert {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Add responsive styles */
+@media (max-width: 768px) {
+    .subscribe-form {
         flex-direction: column;
-        gap: 2rem;
     }
-
-    .recent-posts {
-        background: var(--bg-secondary);
-        border-radius: 16px;
-        padding: 1.5rem;
-        border: 1px solid var(--border-color);
-    }
-
-    .posts-list {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
-
-    .post-item {
-        background: var(--bg-tertiary);
-        border-radius: 12px;
-        padding: 1.25rem;
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .post-item-link {
-        text-decoration: none;
-        color: inherit;
-        display: block;
-        transition: transform 0.3s ease;
-        position: relative;
-        isolation: isolate;
-    }
-
-    .post-item-link::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: var(--gradient-crypto);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        z-index: -1;
-        border-radius: 12px;
-    }
-
-    .post-item-link:hover::after {
-        opacity: 0.05;
-    }
-
-    .post-item-link:hover {
-        transform: translateY(-2px);
-    }
-
-    .post-item:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-glow);
-    }
-
-    .post-item-content {
-        display: flex;
-        gap: 1rem;
-    }
-
-    .post-thumbnail {
-        width: 60px;
-        height: 60px;
-        border-radius: 8px;
-        overflow: hidden;
-        flex-shrink: 0;
-        background: var(--bg-primary);
-    }
-
-    .post-thumbnail img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .placeholder-thumb {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--gradient-2);
-    }
-
-    .thumb-icon {
-        font-size: 1.2rem;
-        opacity: 0.8;
-    }
-
-    .post-details {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .post-item-title {
-        margin-bottom: 0.5rem;
-        font-size: 1rem;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .post-link {
-        text-decoration: none;
-        color: var(--text-primary);
-        transition: color 0.3s ease;
-    }
-
-    .post-link:hover {
-        color: var(--accent-crypto);
-    }
-
-    .post-item-meta {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.8rem;
-        color: var(--text-muted);
-        margin-bottom: 0.5rem;
-    }
-
-    .post-item-excerpt {
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-        line-height: 1.4;
-        margin: 0;
-    }
-
-    .post-item-actions {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-        display: flex;
-        gap: 0.25rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .post-item:hover .post-item-actions {
-        opacity: 1;
-    }
-
-    .action-btn {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 8px;
-        background: var(--bg-secondary);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        transition: all 0.3s ease;
-    }
-
-    .action-btn:hover {
-        transform: scale(1.1);
-        background: var(--hover-bg);
-    }
-
-    .action-btn.edit-btn:hover {
-        color: var(--accent-crypto);
-    }
-
-    .action-btn.delete-btn:hover {
-        color: var(--color-danger);
-    }
-
-    .view-all {
+    
+    .social-links {
         margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--border-color);
     }
-
-    .btn-full {
-        width: 100%;
-        justify-content: center;
-    }
-
-    .crypto-widget {
-        background: var(--bg-secondary);
-        border-radius: 16px;
-        padding: 1.5rem;
-        border: 1px solid var(--border-color);
-    }
-
-    .widget-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 1rem;
-    }
-
-    .crypto-items {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .crypto-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem;
-        background: var(--bg-tertiary);
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-
-    .crypto-item:hover {
-        background: var(--hover-bg);
-        transform: translateX(5px);
-    }
-
-    .crypto-symbol {
-        font-size: 1.5rem;
-        width: 32px;
-        text-align: center;
-    }
-
-    .crypto-name {
-        font-weight: 500;
-        color: var(--text-primary);
-    }
-
-    .homepage-footer {
-        text-align: center;
-        padding: 2rem 0;
-        border-top: 1px solid var(--border-color);
-        margin-top: 2rem;
-    }
-
-    .footer-text {
-        color: var(--text-muted);
-        margin: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-    }
-
-    .footer-icon {
-        font-size: 1.2rem;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: var(--bg-secondary);
-        border-radius: 20px;
-        border: 1px solid var(--border-color);
-    }
-
-    .empty-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        opacity: 0.7;
-    }
-
-    .empty-title {
-        font-size: 2rem;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 1rem;
-    }
-
-    .empty-subtitle {
-        font-size: 1.1rem;
-        color: var(--text-secondary);
-        margin-bottom: 2rem;
-        max-width: 500px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    .empty-actions {
-        display: flex;
-        gap: 1rem;
-        justify-content: center;
-    }
-
-    .no-more-posts {
-        text-align: center;
-        padding: 2rem 0;
-        color: var(--text-muted);
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .content-grid {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        
-        .sidebar-section {
-            order: -1;
-        }
-        
-        .recent-posts {
-            order: 1;
-        }
-        
-        .crypto-widget {
-            order: 2;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .header-content {
-            flex-direction: column;
-            text-align: center;
-            gap: 1rem;
-        }
-        
-        .welcome-title {
-            font-size: 2rem;
-        }
-        
-        .featured-post {
-            padding: 1.5rem;
-        }
-        
-        .post-item-content {
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        .post-thumbnail {
-            width: 100%;
-            height: 120px;
-        }
-        
-        .empty-actions {
-            flex-direction: column;
-            align-items: center;
-        }
-    }
+}
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Animate elements on scroll
-        const animateElements = document.querySelectorAll('.post-item, .crypto-item');
+document.addEventListener('DOMContentLoaded', function() {
+    const scrollContainers = document.querySelectorAll('.news-scroll, .posts-scroll');
+    
+    scrollContainers.forEach(container => {
+        const items = container.querySelectorAll('.news-item, .post-item');
+        
         const observer = new IntersectionObserver((entries) => {
             entries.forEach((entry, index) => {
                 if (entry.isIntersecting) {
                     setTimeout(() => {
                         entry.target.style.opacity = '1';
                         entry.target.style.transform = 'translateY(0)';
-                    }, index * 100);
+                    }, index * 50);
                 }
             });
+        }, {
+            root: container,
+            threshold: 0.1
         });
-
-        animateElements.forEach(element => {
-            element.style.opacity = '0';
-            element.style.transform = 'translateY(20px)';
-            element.style.transition = 'all 0.6s ease';
-            observer.observe(element);
+        
+        items.forEach(item => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+            item.style.transition = 'all 0.6s ease';
+            observer.observe(item);
         });
     });
+    
+    const featuredPost = document.querySelector('.featured-post');
+    if (featuredPost) {
+        featuredPost.style.opacity = '0';
+        featuredPost.style.transform = 'scale(0.95)';
+        featuredPost.style.transition = 'all 0.8s ease';
+        
+        setTimeout(() => {
+            featuredPost.style.opacity = '1';
+            featuredPost.style.transform = 'scale(1)';
+        }, 200);
+    }
+    
+    document.getElementById('subscribe-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = e.target.email.value;
+        const messageDiv = document.getElementById('subscribe-message');
+        
+        try {
+            const response = await fetch('/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `email=${encodeURIComponent(email)}`
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                messageDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                e.target.reset();
+            } else {
+                messageDiv.innerHTML = `<div class="alert alert-error">${data.error}</div>`;
+            }
+        } catch (err) {
+            messageDiv.innerHTML = '<div class="alert alert-error">An error occurred. Please try again.</div>';
+        }
+    });
+});
 </script>
 {% endblock %}

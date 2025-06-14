@@ -1,0 +1,14 @@
+{
+  "timestamp": "2025-06-14T13:05:42.269200",
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+  "session_cookies": {
+    "SameSite": "None",
+    "__cf_bm": "tgw_DHiD5_51rxeZQDVIjIQh6aIaJCpbGRGrVmq6BHA-1749902741-1.0.1.1-.GMw_QT1JJ5akkJlWNHPfkyHjAEtc2VPSX85BNsnzOFr_xmC_C7_HJqClbC2U5VdfbCUIGM6voaJ2q.7tCz.idaODe5zskV7fAxDh3r6De8"
+  },
+  "selenium_available": true,
+  "last_fetch_summary": {
+    "token_launches": 0,
+    "airdrops": 0,
+    "jobs": 0
+  }
+}

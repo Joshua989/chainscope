@@ -20,7 +20,7 @@ from bs4 import BeautifulSoup
 from crypto_launcher import CryptoLauncher
 from crypto_data_service import CryptoDataService
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = 'your-secret-key-change-this'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -1073,6 +1073,68 @@ def add_cryptocurrency():
     except Exception as e:
         print(f"Error adding cryptocurrency: {e}")
         return jsonify({'error': 'Internal server error'}), 500
+
+import json
+from pathlib import Path
+
+# Add this route before app.run()
+@app.route('/alpha')
+def alpha():
+    try:
+        # Read the JSON file
+        json_path = Path(__file__).parent / 'crypto_data.json'
+        with open(json_path, 'r') as file:
+            crypto_data = json.load(file)
+        
+        # Process jobs data to ensure all required fields
+        jobs = crypto_data.get('jobs', [])
+        processed_jobs = []
+        for job in jobs:
+            processed_job = {
+                'title': job.get('title', 'Untitled Position'),
+                'company': job.get('company', job.get('source', 'Unknown Company')),
+                'company_logo': job.get('company_logo'),
+                'location': job.get('location', 'Remote'),
+                'job_url': job.get('job_url'),
+                'salary': job.get('salary'),
+                'job_type': job.get('job_type', 'Full-time'),
+                'categories': job.get('categories', []),
+                'source': job.get('source')
+            }
+            processed_jobs.append(processed_job)
+
+        # Calculate image statistics
+        image_stats = {
+            'tokens_with_images': sum(1 for token in crypto_data.get('token_launches', []) 
+                                    if token.get('image_url')),
+            'total_token_images': len(crypto_data.get('token_launches', [])),
+            'airdrops_with_images': sum(1 for airdrop in crypto_data.get('airdrops', []) 
+                                      if airdrop.get('image_url')),
+            'total_airdrop_images': len(crypto_data.get('airdrops', [])),
+            'jobs_with_images': sum(1 for job in processed_jobs 
+                                  if job.get('company_logo')),
+            'total_job_images': len(processed_jobs)
+        }
+        
+        return render_template(
+            'alpha.html',
+            token_launches=crypto_data.get('token_launches', []),
+            airdrops=crypto_data.get('airdrops', []),
+            crypto_jobs=processed_jobs,
+            last_update=crypto_data.get('last_update', ''),
+            image_stats=image_stats
+        )
+    except Exception as e:
+        print(f"Error loading crypto data: {e}")
+        return render_template(
+            'alpha.html',
+            token_launches=[],
+            airdrops=[],
+            crypto_jobs=[],
+            last_update='',
+            image_stats={},
+            error="Unable to load crypto data"
+        )
 
 if __name__ == '__main__':
     init_app(app)

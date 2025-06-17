@@ -10,3 +10,5 @@ requests==2.31.0
 beautifulsoup4==4.12.2
 pathlib2==2.3.7
 newsapi-python==0.2.7
+feedparser==6.0.10
+

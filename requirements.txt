@@ -12,3 +12,5 @@ pathlib2==2.3.7
 newsapi-python==0.2.7
 feedparser==6.0.10
 python-dotenv==1.0.1
+requests==2.31.0
+requests-cache==1.1.0

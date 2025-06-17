@@ -14,3 +14,5 @@ newsapi-python==0.2.7
 feedparser==6.0.10
 python-dotenv==1.0.1
 requests-cache==1.1.0
+flask-cors==4.0.0
+

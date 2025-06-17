@@ -1,3 +1,11 @@
-flask
-werkzeug
 gunicorn
+Flask==2.3.3
+Werkzeug==2.3.7
+APScheduler==3.10.4
+Flask-Mail==0.9.1
+itsdangerous==2.1.2
+pycoingecko==3.1.0
+pandas==2.1.1
+requests==2.31.0
+beautifulsoup4==4.12.2
+pathlib2==2.3.7

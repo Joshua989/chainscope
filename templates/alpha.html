@@ -11,122 +11,37 @@
 {% endmacro %}
 
 <style>
-/* Update existing styles */
-.crypto-dashboard-container {
+/* Main container for jobs grid */
+.jobs-dashboard-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
     gap: 2rem;
-    margin-top: 2rem;
-    position: relative;
-    z-index: 1;
-    padding: 0 1rem;
-    height: calc(100vh - 4rem); /* Account for margin-top */
+    padding: 2rem;
+    margin: 0 auto;
+    max-width: 1400px;
+    min-height: calc(100vh - 4rem);
 }
 
-.crypto-section {
-    background: var(--bg-secondary);
-    border-radius: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(20px);
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-.section-content {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.items-container {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent-crypto) transparent;
-}
-
-.items-container::-webkit-scrollbar {
-    width: 6px;
-}
-
-.items-container::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-.items-container::-webkit-scrollbar-thumb {
-    background-color: var(--accent-crypto);
-    border-radius: 6px;
-    border: 2px solid transparent;
-}
-
-/* Update section title */
-.section-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--bg-secondary);
-    padding: 1rem 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(20px);
-}
-
-.section-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin: 0;
-}
-
-.section-title span {
-    font-size: 1.75rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent-crypto));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.section-title .section-icon {
-    font-size: 1.5rem;
-    color: var(--accent-crypto);
-}
-
-/* .section-title {
-    font-size: 1.75rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent-crypto));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    padding: 1.5rem;
-    margin: 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    background: var(--bg-secondary);
-} */
-
-.item-card {
+/* Individual job card */
+.job-card {
     background: linear-gradient(
         135deg,
-        var(--bg-primary) 0%,
-        var(--bg-secondary) 100%
+        var(--bg-primary, #ffffff) 0%,
+        var(--bg-secondary, #f8f9fa) 100%
     );
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.1);
     border-radius: 1rem;
-    padding: 1.25rem;
-    margin: 1rem;
-    transition: all 0.3s ease;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    height: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
 }
 
-.item-card::before {
+.job-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -135,139 +50,238 @@
     height: 100%;
     background: linear-gradient(
         135deg,
-        rgba(var(--accent-crypto-rgb), 0.1) 0%,
+        rgba(79, 172, 254, 0.1) 0%,
         transparent 100%
     );
     opacity: 0;
     transition: opacity 0.3s ease;
 }
 
-.item-card:hover::before {
+.job-card:hover::before {
     opacity: 1;
+}
+
+.job-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: rgba(79, 172, 254, 0.3);
+}
+
+/* Job card header */
+.job-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.job-image-container {
+    flex-shrink: 0;
 }
 
 .item-image {
     width: 3.5rem;
     height: 3.5rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    background: var(--bg-secondary);
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: var(--bg-secondary, #f8f9fa);
     padding: 0.25rem;
-    border: 2px solid rgba(var(--accent-crypto-rgb), 0.3);
+    border: 2px solid rgba(79, 172, 254, 0.2);
+    object-fit: cover;
 }
 
-.item-title {
+.job-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.job-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
+    color: var(--text-primary, #2c3e50);
+    margin: 0 0 0.25rem 0;
+    line-height: 1.3;
 }
 
-.item-price, .item-salary {
+.job-company {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #7f8c8d);
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.job-salary {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--accent-crypto);
-    background: rgba(var(--accent-crypto-rgb), 0.1);
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.1);
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
     display: inline-block;
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
 }
 
-.tag {
-    background: rgba(var(--accent-crypto-rgb), 0.1);
-    color: var(--accent-crypto);
-    border: 1px solid rgba(var(--accent-crypto-rgb), 0.2);
+/* Job information */
+.job-info {
+    margin-top: 1rem;
+}
+
+.job-location {
+    font-size: 0.9rem;
+    color: var(--text-secondary, #7f8c8d);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.job-categories {
+    margin-bottom: 0.75rem;
+}
+
+.job-tag {
+    background: rgba(79, 172, 254, 0.1);
+    color: #d97706;
+    border: 1px solid rgba(79, 172, 254, 0.2);
     font-weight: 500;
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
     font-size: 0.75rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.25rem;
+    display: inline-block;
     transition: all 0.2s ease;
 }
 
-.tag:hover {
-    background: var(--accent-crypto);
-    color: var(--bg-primary);
+.job-tag:hover {
+    background: #d97706;
+    color: white;
+    transform: translateY(-1px);
 }
 
+.job-type {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #7f8c8d);
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+/* Apply button */
+.apply-button-container {
+    margin-top: auto;
+    text-align: center;
+    padding-top: 1rem;
+}
+
+/* Page header */
+
 .apply-button {
-    background: linear-gradient(135deg, var(--accent-crypto) 0%, #ff9800 100%);
+    background: #f59e0b;
     color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 1rem;
+    padding: 0.75rem 2rem;
+    border-radius: 2rem;
     font-weight: 600;
     letter-spacing: 0.5px;
-    box-shadow: 0 4px 15px rgba(var(--accent-crypto-rgb), 0.3);
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
     transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 10;
 }
 
 .apply-button:hover {
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 0 6px 20px rgba(var(--accent-crypto-rgb), 0.4);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    text-decoration: none;
+    color: white;
+    background: #d97706;
 }
 
-.stats-container {
-    background: var(--bg-secondary);
-    border-radius: 1.5rem;
-    padding: 2rem;
-    margin-top: 3rem;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+/* Job card content - clickable area */
+.job-content {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    flex: 1;
 }
 
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
-    padding: 1rem;
+.job-content:hover {
+    text-decoration: none;
+    color: inherit;
 }
 
-.stat-number {
-    font-size: 1.5rem;
+/* Apply button */
+.apply-button-container {
+    margin-top: auto;
+    text-align: center;
+    padding-top: 1rem;
+}
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem 0;
+}
+
+.page-title {
+    font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--accent-crypto), #ff9800);
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0.5rem;
 }
 
-.update-info {
-    text-align: center;
-    margin-top: 2rem;
-    padding: 1rem;
-    background: rgba(var(--accent-crypto-rgb), 0.1);
-    border-radius: 1rem;
+.page-subtitle {
+    font-size: 1.1rem;
+    color: var(--text-secondary, #7f8c8d);
     font-weight: 500;
 }
 
+/* Responsive design */
 @media (max-width: 768px) {
-    .crypto-dashboard-container {
-        height: auto;
+    .jobs-dashboard-container {
         grid-template-columns: 1fr;
-    }
-    
-    .crypto-section {
-        height: calc(100vh - 2rem);
-        margin-bottom: 2rem;
-    }
-    
-    .section-title {
-        font-size: 1.5rem;
+        gap: 1.5rem;
         padding: 1rem;
     }
     
-    .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .job-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .item-image {
+        width: 4rem;
+        height: 4rem;
     }
 }
 
-/* Add smooth scrolling animation */
-.item-card {
+@media (min-width: 769px) and (max-width: 1200px) {
+    .jobs-dashboard-container {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+}
+
+@media (min-width: 1201px) {
+    .jobs-dashboard-container {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    }
+}
+
+/* Animation */
+.job-card {
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease forwards;
-    animation-delay: calc(var(--animation-order) * 0.1s);
+    animation-delay: calc(var(--animation-order) * 0.05s);
 }
 
 @keyframes fadeInUp {
@@ -281,196 +295,89 @@
     }
 }
 
-.job-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-.job-card-link:hover {
-    transform: translateY(-5px);
-}
-
-.job-card-link .item-card {
-    cursor: pointer;
-}
-
-.job-card-link .item-card:hover .apply-button {
-    background: var(--accent-crypto);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(var(--accent-crypto-rgb), 0.4);
-}
-
-/* Update existing item-card hover state for linked cards */
-.job-card-link .item-card:hover::before {
-    opacity: 0.15;
+/* Error alert */
+.error-alert {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #ffcdd2;
 }
 </style>
-<div class="min-h-screen bg-gray-50 py-12">
-    <div class="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+
+<div class="min-h-screen bg-gray-50">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         {% if error %}
         <div class="error-alert" role="alert">
             {{ error }}
         </div>
         {% endif %}
 
-        <!-- Main Flex Layout -->
-        <div class="crypto-dashboard-container">
-            <!-- Token Launches Section - 30% width -->
-            <div class="crypto-section token-launches-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">🚀</span>
-                        <span>Token Launches</span>
-                    </h2>
-                    <p class="section-subtitle">Latest token launches and presales</p>
-                </div>
-                <div class="section-content">
-                    <!-- Token Launches Section -->
-                    <div class="items-container">
-                        {% for token in token_launches %}
-                        {% if token.symbol != 'NEWS' %}
-                        <div class="item-card">
-                            <div class="item-header">
-                                <div class="item-image-container">
-                                    {% if token.image_url %}
-                                        <img src="{{ token.image_url }}" alt="{{ token.name }}" class="item-image">
-                                    {% else %}
-                                        {{ default_image_svg() }}
-                                    {% endif %}
-                                </div>
-                                <div class="item-details">
-                                    <h3 class="item-title">{{ token.name }}</h3>
-                                    <p class="item-subtitle">{{ token.symbol }}</p>
-                                    <p class="item-price">{{ token.price }}</p>
-                                    {% if token.market_cap %}
-                                        <p class="item-subtitle">MC: {{ token.market_cap }}</p>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% if token.description %}
-                            <p class="item-description">{{ token.description }}</p>
-                            {% endif %}
-                            <p class="item-source">{{ token.source }}</p>
-                        </div>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title" style="color: #d97706; -webkit-text-fill-color: #d97706;">💼 Crypto Jobs</h1>
 
-            <!-- Crypto Jobs Section - 40% width (middle) -->
-            <div class="crypto-section crypto-jobs-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">💼</span>
-                        <span>Crypto Jobs</span>
-                    </h2>
-                    <p class="section-subtitle">Latest Web3 and blockchain opportunities</p>
-                </div>
-                <div class="section-content">
-                    <!-- Crypto Jobs Section -->
-                    <div class="items-container">
-                        {% for job in crypto_jobs %}
-                        {% if job.job_url %}
-                        <a href="{{ job.job_url }}" target="_blank" class="job-card-link">
-                        {% endif %}
-                            <div class="item-card">
-                                <div class="item-header">
-                                    <div class="item-image-container">
-                                        {% if job.company_logo %}
-                                            <img src="{{ job.company_logo }}" alt="{{ job.company }}" class="item-image">
-                                        {% else %}
-                                            {{ default_image_svg() }}
-                                        {% endif %}
-                                    </div>
-                                    <div class="item-details">
-                                        <h3 class="item-title">{{ job.title }}</h3>
-                                        {% if job.company %}
-                                            <p class="item-subtitle">{{ job.company }}</p>
-                                        {% endif %}
-                                        {% if job.salary %}
-                                            <p class="item-salary">{{ job.salary }}</p>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                                <div class="item-info">
-                                    {% if job.location %}
-                                        <p class="item-location">📍 {{ job.location }}</p>
-                                    {% endif %}
-                                    {% if job.categories %}
-                                        <p class="item-categories">
-                                            {% for category in job.categories %}
-                                                <span class="tag">{{ category }}</span>
-                                            {% endfor %}
-                                        </p>
-                                    {% endif %}
-                                    {% if job.job_type %}
-                                        <p class="item-job-type">{{ job.job_type }}</p>
-                                    {% endif %}
-                                    {% if job.job_url %}
-                                        <div style="margin-top: 1rem; text-align: left;">
-                                            <span class="apply-button">Apply Now</span>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% if job.job_url %}
-                        </a>
-                        {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Airdrops Section - Remaining width (30%) -->
-            <div class="crypto-section airdrops-section">
-                <div class="section-header">
-                    <h2 class="section-title">
-                        <span class="section-icon">🎁</span>
-                        <span>Airdrops</span>
-                    </h2>
-                    <p class="section-subtitle">Active and upcoming token airdrops</p>
-                </div>
-                <div class="section-content">
-                    <!-- Airdrops Section -->
-                    <div class="items-container">
-                        {% for airdrop in airdrops %}
-                        <div class="item-card">
-                            <div class="item-header">
-                                <div class="item-image-container">
-                                    {% if airdrop.image_url %}
-                                        <img src="{{ airdrop.image_url }}" alt="{{ airdrop.project }}" class="item-image">
-                                    {% else %}
-                                        {{ default_image_svg() }}
-                                    {% endif %}
-                                </div>
-                                <div class="item-details">
-                                    <h3 class="item-title">{{ airdrop.project }}</h3>
-                                    <p class="item-reward">{{ airdrop.reward }}</p>
-                                </div>
-                            </div>
-                            <div class="item-info">
-                                <p class="item-requirements">{{ airdrop.requirements }}</p>
-                                <p class="item-deadline">Deadline: {{ airdrop.deadline }}</p>
-                                {% if airdrop.url %}
-                                <a href="{{ airdrop.url }}" target="_blank" class="learn-more-link">
-                                    Learn More →
-                                </a>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+            <p class="page-subtitle">Discover the latest Web3 and blockchain opportunities</p>
         </div>
 
-        <!-- Stats and Update Info -->
-        <div class="stats-container">
-           
+        <!-- Jobs Grid -->
+        <div class="jobs-dashboard-container">
+            {% for job in crypto_jobs %}
+            <div class="job-card" style="--animation-order: {{ loop.index }}">
+                <!-- Job content (clickable area excluding the apply button) -->
+                {% if job.job_url %}
+                <div class="job-content" onclick="window.open('{{ job.job_url }}', '_blank')">
+                {% else %}
+                <div class="job-content">
+                {% endif %}
+                
+                    <div class="job-header">
+                        <div class="job-image-container">
+                            {% if job.company_logo %}
+                                <img src="{{ job.company_logo }}" alt="{{ job.company }}" class="item-image">
+                            {% else %}
+                                {{ default_image_svg() }}
+                            {% endif %}
+                        </div>
+                        <div class="job-details">
+                            <h3 class="job-title">{{ job.title }}</h3>
+                            {% if job.company %}
+                                <p class="job-company">{{ job.company }}</p>
+                            {% endif %}
+                            {% if job.salary %}
+                                <div class="job-salary">{{ job.salary }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
 
+                    <div class="job-info">
+                        {% if job.location %}
+                            <p class="job-location">📍 {{ job.location }}</p>
+                        {% endif %}
+                        
+                        {% if job.categories %}
+                            <div class="job-categories">
+                                {% for category in job.categories %}
+                                    <span class="job-tag">{{ category }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        {% if job.job_type %}
+                            <p class="job-type">{{ job.job_type }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Apply button (separate from job content to prevent nested links) -->
+                {% if job.job_url %}
+                    <div class="apply-button-container">
+                        <a href="{{ job.job_url }}" target="_blank" class="apply-button" onclick="event.stopPropagation();">Apply Now →</a>
+                    </div>
+                {% endif %}
+            </div>
+            {% endfor %}
         </div>
     </div>
 </div>

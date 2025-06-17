@@ -1,81 +1,143 @@
 {
   "jobs": [
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104686",
-      "job_url": "https://web3.career/defi-technical-lead-evm-trilitech/104686",
-      "title": "DeFi Technical Lead (EVM)"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Researcher & Writer",
+      "job_url": "https://cryptocurrencyjobs.co/marketing/hazeflow-researcher-writer/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/hazeflow.png",
+      "company": "Hazeflow",
+      "categories": [
+        "Remote",
+        "Marketing",
+        "Full-Time",
+        "Content Writer",
+        "Crypto Pay",
+        "Research",
+        "Web3"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time"
     },
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104735",
-      "job_url": "https://web3.career/lead-technology-risk-coinbase/104735",
-      "title": "Lead Technology Risk",
-      "location": "leadremoteblockchaincrypto"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Protocol Research Specialist",
+      "job_url": "https://cryptocurrencyjobs.co/engineering/raiku-protocol-research-specialist/",
+      "company": "Raiku",
+      "company_url": "https://cryptocurrencyjobs.co/startups/raiku/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/raiku.jpg",
+      "categories": [
+        "Remote",
+        "Engineering",
+        "Full-Time",
+        "Research",
+        "Solana",
+        "Technical Writer"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time"
     },
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104734",
-      "job_url": "https://web3.career/senior-machine-learning-platform-engineer-platform-ai-coinbase/104734",
-      "title": "machine learning",
-      "location": "aiengineermachine learningseniorremote"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Crypto Business Development Director",
+      "job_url": "https://cryptocurrencyjobs.co/sales/edge-capital-investment-management-crypto-business-development-director/",
+      "company": "Edge Capital Investment Management",
+      "company_url": "https://cryptocurrencyjobs.co/startups/edge-capital-investment-management/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/edge-capital-investment-management.jpg",
+      "categories": [
+        "Remote",
+        "Sales",
+        "Full-Time",
+        "Non-Tech",
+        "Partnerships",
+        "Web3"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time"
     },
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104733",
-      "job_url": "https://web3.career/country-manager-mexico-coinbase/104733",
-      "title": "Country Manager Mexico",
-      "location": "remoteblockchaincrypto"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Senior Full Stack Engineer",
+      "job_url": "https://cryptocurrencyjobs.co/engineering/inverter-network-senior-full-stack-engineer/",
+      "company": "Inverter Network",
+      "company_url": "https://cryptocurrencyjobs.co/startups/inverter-network/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/inverter-network.jpg",
+      "categories": [
+        "Remote",
+        "Engineering",
+        "Full-Time",
+        "Crypto Pay",
+        "DeFi",
+        "Engineer",
+        "Full Stack Engineer",
+        "TypeScript"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time"
     },
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104732",
-      "job_url": "https://web3.career/senior-software-engineer-enterprise-app-coinbase/104732",
-      "title": "Senior Software Engineer Enterprise App",
-      "location": "engineerseniordevremoteaws"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Events Intern",
+      "job_url": "https://cryptocurrencyjobs.co/marketing/flight3-events-intern/",
+      "company": "Flight3",
+      "company_url": "https://cryptocurrencyjobs.co/startups/flight3/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/flight3.jpg",
+      "categories": [
+        "London",
+        "Marketing",
+        "Internship",
+        "Entry-Level",
+        "Event Marketing",
+        "Non-Tech"
+      ],
+      "primary_category": "London",
+      "location": "London",
+      "job_type": "Internship"
     },
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": null,
-      "job_url": "https://web3.career/metana",
-      "company_logo": "https://sh.web3.career/assets/img/other/1pix.png",
-      "title": "Bootcamp Info"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Protocol Research Engineer",
+      "job_url": "https://cryptocurrencyjobs.co/engineering/raiku-protocol-research-engineer/",
+      "company": "Raiku",
+      "company_url": "https://cryptocurrencyjobs.co/startups/raiku/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/raiku.jpg",
+      "categories": [
+        "Remote",
+        "Engineering",
+        "Full-Time",
+        "Engineer",
+        "Protocol Engineer",
+        "Research",
+        "Solana"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time",
+      "posted_date": "1d"
     },
     {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104731",
-      "job_url": "https://web3.career/sales-operations-strategy-associate-senior-associate-coinbase/104731",
-      "title": "Sales Operations Strategy Associate Senior Associate",
-      "location": "Remote"
-    },
-    {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104730",
-      "job_url": "https://web3.career/community-manager-coinbase/104730",
-      "title": "community manager",
-      "location": "community managernon techremoteblockchaincrypto"
-    },
-    {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104729",
-      "job_url": "https://web3.career/senior-associate-support-operations-gemini/104729",
-      "title": "customer support"
-    },
-    {
-      "source": "web3.career",
-      "is_sponsored": false,
-      "job_id": "104727",
-      "job_url": "https://web3.career/product-operations-manager-crypto-robinhood/104727",
-      "title": "United States"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Infrastructure & DevOps Engineer",
+      "job_url": "https://cryptocurrencyjobs.co/engineering/raiku-infrastructure-devops-engineer/",
+      "company": "Raiku",
+      "company_url": "https://cryptocurrencyjobs.co/startups/raiku/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/raiku.jpg",
+      "categories": [
+        "Remote",
+        "Engineering",
+        "Full-Time",
+        "Crypto Pay",
+        "DevOps",
+        "Engineer",
+        "Solana"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time",
+      "posted_date": "1d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -95,7 +157,8 @@
       "primary_category": "Sales",
       "location": "Remote",
       "salary": "$80K",
-      "job_type": "Full-time"
+      "job_type": "Full-time",
+      "posted_date": "2d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -123,7 +186,8 @@
       "primary_category": "New York",
       "location": "Remote",
       "salary": "$100K",
-      "job_type": "Full-time"
+      "job_type": "Full-time",
+      "posted_date": "2d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -145,7 +209,8 @@
       "primary_category": "New York",
       "location": "Remote",
       "salary": "$160K",
-      "job_type": "Full-time"
+      "job_type": "Full-time",
+      "posted_date": "3d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -164,7 +229,8 @@
       ],
       "primary_category": "Remote",
       "location": "Remote",
-      "job_type": "Full-time"
+      "job_type": "Full-time",
+      "posted_date": "3d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -182,7 +248,8 @@
       ],
       "primary_category": "Remote - London",
       "location": "Remote",
-      "job_type": "Full-time"
+      "job_type": "Full-time",
+      "posted_date": "3d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -199,7 +266,8 @@
       ],
       "primary_category": "Marketing",
       "location": "Remote",
-      "job_type": "Full-time"
+      "job_type": "Full-time",
+      "posted_date": "3d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -226,7 +294,7 @@
       "location": "Remote",
       "salary": "$115K",
       "job_type": "Full-time",
-      "posted_date": "1d"
+      "posted_date": "3d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -251,7 +319,7 @@
       "primary_category": "Remote",
       "location": "Remote",
       "job_type": "Full-time",
-      "posted_date": "1d"
+      "posted_date": "4d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -270,7 +338,7 @@
       "primary_category": "Remote",
       "location": "Remote",
       "job_type": "Full-time",
-      "posted_date": "1d"
+      "posted_date": "4d"
     },
     {
       "source": "cryptocurrencyjobs.co",
@@ -293,21 +361,70 @@
       "primary_category": "Remote",
       "location": "Remote",
       "job_type": "Full-time",
-      "posted_date": "1d"
-    }
-  ],
-  "token_launches": [
+      "posted_date": "4d"
+    },
     {
-      "name": "#1 Platform to discover newest coins",
-      "symbol": "",
-      "price": null,
-      "market_cap": null,
-      "source": "coinhunt.cc",
-      "timestamp": "2025-06-14T16:04:00.508061",
-      "contract_address": null,
-      "description": null,
-      "image_url": "https://coinhunt.cc/assets/misc/hero_info_background.svg"
+      "source": "cryptocurrencyjobs.co",
+      "title": "Application Security Engineer",
+      "job_url": "https://cryptocurrencyjobs.co/engineering/vac-application-security-engineer/",
+      "company": "Vac",
+      "company_url": "https://cryptocurrencyjobs.co/startups/vac/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/vac.jpg",
+      "categories": [
+        "Remote",
+        "Engineering",
+        "Full-Time",
+        "Crypto Pay",
+        "Engineer",
+        "Rust",
+        "Security",
+        "Web3"
+      ],
+      "primary_category": "Remote",
+      "location": "Remote",
+      "job_type": "Full-time",
+      "posted_date": "4d"
+    },
+    {
+      "source": "cryptocurrencyjobs.co",
+      "title": "Business Development",
+      "job_url": "https://cryptocurrencyjobs.co/sales/cobalt-finance-business-development/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/placeholder.jpg",
+      "company": "Cobalt Finance",
+      "categories": [
+        "Sales",
+        "Full-Time",
+        "Crypto Pay",
+        "DeFi",
+        "Non-Tech",
+        "Web3"
+      ],
+      "primary_category": "Sales",
+      "location": "Remote",
+      "salary": "$100K",
+      "job_type": "Full-time",
+      "posted_date": "4d"
+    },
+    {
+      "source": "cryptocurrencyjobs.co",
+      "title": "Marketing Manager",
+      "job_url": "https://cryptocurrencyjobs.co/marketing/kappa-lab-marketing-manager/",
+      "company_logo": "https://cryptocurrencyjobs.co/startups/assets/logos/kappa-lab.png",
+      "company": "Kappa Lab",
+      "categories": [
+        "London",
+        "Marketing",
+        "Full-Time",
+        "Marketing Manager",
+        "Non-Tech",
+        "Web3"
+      ],
+      "primary_category": "London",
+      "location": "London",
+      "job_type": "Full-time",
+      "posted_date": "4d"
     }
   ],
-  "last_update": "2025-06-14T16:04:03.304097"
+  "last_update": "2025-06-17T00:19:02.298064",
+  "total_jobs": 20
 }

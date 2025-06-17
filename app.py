@@ -299,6 +299,15 @@ def logout():
     flash('You have been logged out')
     return redirect(url_for('index'))
 
+ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'}
+
+def allowed_file(filename):
+    """
+    Check if the uploaded file has an allowed extension
+    """
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 @app.route('/create_post', methods=['GET', 'POST'])
 def create_post():
     if 'user_id' not in session:

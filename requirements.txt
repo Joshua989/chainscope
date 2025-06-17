@@ -9,4 +9,4 @@ pandas==2.1.1
 requests==2.31.0
 beautifulsoup4==4.12.2
 pathlib2==2.3.7
-newsapi
+newsapi-python==0.2.7

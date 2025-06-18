@@ -19,6 +19,7 @@ import requests
 from bs4 import BeautifulSoup
 from crypto_launcher import CryptoLauncher
 from crypto_data_service import CryptoDataService
+from waitress import serve
 
 app = Flask(__name__, static_folder='static', static_url_path='/static')
 app.secret_key = 'your-secret-key-change-this'
@@ -1147,4 +1148,13 @@ def alpha():
 
 if __name__ == '__main__':
     init_app(app)
-    app.run(debug=True, port=5000)
+    
+    # Check if running on Render
+    if 'RENDER' in os.environ:
+        # Get port from environment variable
+        port = int(os.environ.get('PORT', 5000))
+        # Use waitress for production
+        serve(app, host='0.0.0.0', port=port)
+    else:
+        # Use Flask development server locally
+        app.run(debug=True, port=5000)

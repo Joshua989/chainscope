@@ -1,6 +1,5 @@
 flask
 werkzeug
-sqlite3
 apscheduler
 python-dotenv
 flask-mail
@@ -14,8 +13,3 @@ newsapi-python==0.2.7
 feedparser
 requests_cache
 python-dateutil==2.8.2
-apscheduler
-flask_mail
-pycoingecko
-
-
